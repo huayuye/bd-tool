@@ -35,11 +35,11 @@ public class MatrixUtil {
      */
     public static BitMatrix toQRCodeMatrix(String text, Integer width,
                                            Integer height) {
-        if (width == null || width < 300) {
+        if (width == null) {
             width = 300;
         }
 
-        if (height == null || height < 300) {
+        if (height == null) {
             height = 300;
         }
         // 二维码的图片格式
@@ -107,11 +107,11 @@ public class MatrixUtil {
     public static BitMatrix toBarCodeMatrix(String str, Integer width,
                                             Integer height) {
 
-        if (width == null || width < 200) {
+        if (width == null) {
             width = 200;
         }
 
-        if (height == null || height < 50) {
+        if (height == null) {
             height = 50;
         }
 

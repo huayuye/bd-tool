@@ -34,14 +34,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SMBFileUtil {
     @SuppressWarnings("static-access")
-    public static void main(String[] args) {
-
-        System.out.println(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
-        System.out.println(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))+UUID.randomUUID().toString().replace("-","").substring(27));
-
-//        readFile();
-//        writeNetFile("xxxxxxxxxxx", "@xxxxxxxxxx", "https://avatar.csdn.net/9/B/1/3_u013092293.jpg", "smb://192.xxx.xxxx.xxx/share/test.jpg");
-    }
+//    public static void main(String[] args) {
+//
+//        System.out.println(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+//        System.out.println(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))+UUID.randomUUID().toString().replace("-","").substring(27));
+//
+////        readFile();
+////        writeNetFile("xxxxxxxxxxx", "@xxxxxxxxxx", "https://avatar.csdn.net/9/B/1/3_u013092293.jpg", "smb://192.xxx.xxxx.xxx/share/test.jpg");
+//    }
 
     /**
      * Read the SMB file to local，读取smb文件到本地
