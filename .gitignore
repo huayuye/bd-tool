@@ -16,7 +16,6 @@
 *.iws
 *.iml
 *.ipr
-*.jar
 /out/
 
 ### NetBeans ###
