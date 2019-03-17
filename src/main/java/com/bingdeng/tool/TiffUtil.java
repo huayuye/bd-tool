@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 public class TiffUtil {
 
-    /**e
+    /**
      * 将 images to tiff
      * @param imageBytes 需要转换的图片的字节流
      * @param outputStream 转后的tiff输出流
