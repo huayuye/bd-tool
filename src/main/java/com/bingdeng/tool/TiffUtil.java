@@ -22,7 +22,7 @@ public class TiffUtil {
      * @param outputStream 转后的tiff输出流
      * @return
      */
-    public static boolean imgs2TIFF(List<byte[]> imageBytes, OutputStream outputStream) {
+    public static boolean images2TIFF(List<byte[]> imageBytes, OutputStream outputStream) {
 
         if (imageBytes != null && imageBytes.size() > 0) {
             try {
