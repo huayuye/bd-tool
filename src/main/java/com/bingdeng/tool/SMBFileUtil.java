@@ -4,6 +4,7 @@ package com.bingdeng.tool;
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
+import com.hierynomus.mssmb2.SMB2CreateOptions;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.SmbConfig;
@@ -14,6 +15,8 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 import jcifs.smb.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.net.URL;
@@ -21,9 +24,7 @@ import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,7 +43,8 @@ public class SMBFileUtil {
 ////        readFile();
 ////        writeNetFile("xxxxxxxxxxx", "@xxxxxxxxxx", "https://avatar.csdn.net/9/B/1/3_u013092293.jpg", "smb://192.xxx.xxxx.xxx/share/test.jpg");
 //    }
-
+    private SMBFileUtil(){}
+    private static String[] nameSuffix = {"jpg","jpeg","png","pdf"};
     /**
      * Read the SMB file to local，读取smb文件到本地
      *
@@ -346,7 +348,7 @@ public class SMBFileUtil {
             // 连接共享文件夹
             DiskShare share = (DiskShare) session.connectShare(smbPropertis.getSmbShareFolder());
 //            smbDestFileUrl格式示例：folder/log/file.txt
-            com.hierynomus.smbj.share.File smbFileWrite = share.openFile(smbDestFileUrl, EnumSet.of(AccessMask.GENERIC_WRITE), null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_CREATE, null);
+            com.hierynomus.smbj.share.File smbFileWrite = share.openFile(smbDestFileUrl, EnumSet.of(AccessMask.GENERIC_WRITE), null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, null);
 //            InputStream in = new FileInputStream("E:/test/20181214172525942d0869f069e2c.png");
             OutputStream outputStream1 = smbFileWrite.getOutputStream();
             byte[] buffer = new byte[2048];
@@ -430,5 +432,223 @@ public class SMBFileUtil {
         return false;
     }
 
+
+    /**
+     * SMBJ protocol
+     * @param smbPropertis
+     * @param files
+     * @return
+     */
+    public static  Map<String,Set<String>> writeFiles(SMBPropertis smbPropertis,List<MultipartFile> files) {
+
+        Map<String,Set<String>> resultMap = new HashMap<String,Set<String>>(2);
+        resultMap.put("fail", Collections.EMPTY_SET);
+        resultMap.put("success",Collections.EMPTY_SET);
+        String shareUrl = smbPropertis.getSmbProtocol()+"://"+smbPropertis.getSmbDomain()+((smbPropertis.getSmbPort()==null||smbPropertis.getSmbPort().equals(445))?"":(":"+String.valueOf(smbPropertis.getSmbPort())))+ "/" +smbPropertis.getSmbShareFolder();
+        // 设置超时时间(可选)
+        SmbConfig config = SmbConfig.builder().withTimeout(120, TimeUnit.SECONDS)
+                .withTimeout(120, TimeUnit.SECONDS) // 超时设置读，写和Transact超时（默认为60秒）
+                .withSoTimeout(180, TimeUnit.SECONDS) // Socket超时（默认为0秒）
+                .withDfsEnabled(true)
+                .build();
+
+        // 如果不设置超时时间	SMBClient client = new SMBClient();
+        SMBClient client = new SMBClient(config);
+        DiskShare share = null;
+        try {
+            Connection connection = client.connect(smbPropertis.getSmbDomain(),smbPropertis.getSmbPort());	// 如:123.123.123.123
+            AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(),smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
+            Session session = connection.authenticate(ac);
+            // 连接共享文件夹
+            share = (DiskShare) session.connectShare(smbPropertis.getSmbShareFolder());
+        } catch (Exception e) {
+            if (client != null) {
+                client.close();
+            }
+            log.info("连接共享文件夹异常：{}",e.toString());
+            return resultMap;
+        }
+
+        String fileUrl = null;
+        String fileDir = null;
+        String toDayDirName = null;
+        String fileNameSuffix = null;
+        Set<String> successList = new HashSet<String>(files!=null?files.size():1);
+        Set<String> failList = new HashSet<String>(files!=null?files.size():1);
+        String originalFilename = null;
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        byte[] buffer = null;
+        int len = -1;
+        for(MultipartFile file : files){
+            originalFilename = file.getOriginalFilename();
+            fileNameSuffix = originalFilename.substring(originalFilename.lastIndexOf(".")+1);
+            //不符合语序的格式
+            if(!judgeFileNameSuffix(fileNameSuffix)){
+                log.error("Invalid File Format:{}",originalFilename);
+                failList.add(originalFilename);
+                continue;
+            }
+            //按日期分文件夹
+            toDayDirName = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            //默认为图片文件夹路径
+            fileDir = smbPropertis.getSmbImageFolder()+toDayDirName;
+            //pdf文件
+            if("pdf".equals(fileNameSuffix)){
+                fileDir = smbPropertis.getSmbPdfFolder()+toDayDirName;
+            }
+            //判断文件夹是否存在，不存在则创建
+            if(!(share.folderExists(fileDir))){
+                share.mkdir(fileDir);
+            }
+            fileUrl = fileDir+ "/" +RandomUtil.getRandom()+"."+fileNameSuffix;
+            //smbDestFileUrl格式示例：folder/log/file.txt
+            com.hierynomus.smbj.share.File smbFileWrite = share.openFile(fileUrl, EnumSet.of(AccessMask.GENERIC_WRITE), null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF,null);
+            outputStream = smbFileWrite.getOutputStream();
+            buffer = new byte[2048];
+            len = -1;
+            try {
+                inputStream=file.getInputStream();
+                while((len=inputStream.read(buffer))!=-1){
+                    //将内容写入到smb服务上的文件
+                    outputStream.write(buffer,0,len);
+                }
+                outputStream.flush();
+            }catch (IOException e) {
+                log.error("Image Upload Fail",originalFilename);
+                failList.add(originalFilename);
+                continue;
+            }finally {
+                if(outputStream!=null){
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        log.error("Output IO Close Fail");
+                    }
+                }
+                if(inputStream!=null){
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        log.error("Input IO Close Fail");
+                    }
+                }
+            }
+            successList.add(shareUrl+ "/" +fileUrl);
+        }
+        if (client != null) {
+            client.close();
+        }
+        resultMap.put("fail",failList);
+        resultMap.put("success",successList);
+        return resultMap;
+    }
+
+    public static void main(String[] args) {
+        List<String> urls = new ArrayList<>();
+        urls.add("smb://10.60.178.251/share/image/2019-03-19/201903191602b01f23.jpg");
+        urls.add("smb://10.60.178.251/share/image/2019-03-19/201903191602f02b45.jpg");
+        urls.add("smb://10.60.178.251/share/image/2019-03-19/20190319160202a45a.jpg");
+
+        readFiles(new SMBPropertis(),urls);
+    }
+
+    /**
+     * SMBJ protocol
+     * @param smbPropertis
+     * @param smbSourceFileUrls
+     * @return
+     */
+    public static List<byte[]> readFiles(SMBPropertis smbPropertis, List<String> smbSourceFileUrls) {
+        List<byte[]> outputBytes = new ArrayList<>();
+        String shareUrl = smbPropertis.getSmbProtocol()+"://"+smbPropertis.getSmbDomain()+((smbPropertis.getSmbPort()==null||smbPropertis.getSmbPort().equals(445))?"":(":"+String.valueOf(smbPropertis.getSmbPort())))+"/"+smbPropertis.getSmbShareFolder();
+        // 设置超时时间(可选)
+        SmbConfig config = SmbConfig.builder().withTimeout(120, TimeUnit.SECONDS)
+                .withTimeout(120, TimeUnit.SECONDS) // 超时设置读，写和Transact超时（默认为60秒）
+                .withSoTimeout(180, TimeUnit.SECONDS) // Socket超时（默认为0秒）
+                .withDfsEnabled(true)
+                .build();
+        // 如果不设置超时时间	SMBClient client = new SMBClient();
+        SMBClient client = new SMBClient(config);
+        Connection connection = null;	// 如:123.123.123.123
+        try {
+            connection = client.connect(smbPropertis.getSmbDomain(),smbPropertis.getSmbPort());
+        } catch (IOException e) {
+            if (client != null) {
+                client.close();
+            }
+            log.info("Connection Fail" , e.toString());
+            return outputBytes;
+        }
+        AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(),smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
+        Session session = connection.authenticate(ac);
+        // 连接共享文件夹
+        DiskShare share = (DiskShare) session.connectShare(smbPropertis.getSmbShareFolder());
+        String downFileName = null;
+        String downFileFolder = null;
+        String filePath = null;
+        ByteArrayOutputStream outputStream = null;
+        for(String smbSourceFileUrl:smbSourceFileUrls){
+            downFileName = smbSourceFileUrl.substring(smbSourceFileUrl.lastIndexOf("/")+1);
+            downFileFolder = smbSourceFileUrl.replace(shareUrl,"").replace(downFileName,"").substring(1);
+//            downFileFolder格式示例:如（share/image/file.png,share是共享文件夹，则downFileFolder等于image/,downFileName等于file.png)
+            filePath = null;
+            for (FileIdBothDirectoryInformation f : share.list(downFileFolder, downFileName)) {
+                filePath =downFileFolder+ f.getFileName();
+//                filePath格式示例：共享文件夹之后的文件路径，如（share/image/file.png,share是共享文件夹，则filePath等于image/file.png）
+                if (share.fileExists(filePath)) {
+                    outputStream = new ByteArrayOutputStream();
+                    log.info("正在下载文件:{}" , f.getFileName());
+                    File smbFileRead = share.openFile(filePath, EnumSet.of(AccessMask.GENERIC_READ), null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OPEN, null);
+                    InputStream in = smbFileRead.getInputStream();
+                    byte[] buffer = new byte[4096];
+                    int len = 0;
+                    try {
+                        while ((len = in.read(buffer, 0, buffer.length)) != -1) {
+                            outputStream.write(buffer, 0, len);
+                        }
+                        outputStream.flush();
+                        outputBytes.add(outputStream.toByteArray());
+                        log.info("File Load Successfully:{}",filePath);
+                    } catch (Exception e) {
+                        log.error("File Load Fail:{},msg:{}",filePath,e.toString());
+                    }finally {
+                        if(outputStream!=null){
+                            try {
+                                outputStream.close();
+                            } catch (IOException e) {
+                                log.error("Io Close Fail：{}",e.toString());
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        if (client != null) {
+            client.close();
+        }
+        if(outputBytes.size()==0){
+            log.info("文件下载失败");
+        }else if(outputBytes.size()<smbSourceFileUrls.size()){
+            log.info("部分文件下载成功");
+        }else if(outputBytes.size()==smbSourceFileUrls.size()){
+            log.info("全部文件下载成功");
+        }
+        return outputBytes;
+    }
+
+    public static boolean judgeFileNameSuffix(String fileNameSuffix){
+        if(StringUtils.isBlank(fileNameSuffix)){
+            return false;
+        }
+
+        for(String suffix:nameSuffix){
+            if(suffix.equals(fileNameSuffix.toLowerCase().trim())){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
