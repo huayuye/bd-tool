@@ -143,7 +143,7 @@ public class DeEncryptUtil {
          * @throws BadPaddingException
          * @throws IllegalBlockSizeException
          */
-        public static String encode(String encodeRules,String content) throws Exception {
+        public static String encrypt(String encodeRules,String content) throws Exception {
                 //1.构造密钥生成器，指定为AES算法,不区分大小写
                 KeyGenerator keygen=KeyGenerator.getInstance("AES");
                 //2.根据ecnodeRules规则初始化密钥生成器
@@ -188,7 +188,7 @@ public class DeEncryptUtil {
          * @throws BadPaddingException
          * @throws IllegalBlockSizeException
          */
-        public static String decode(String encodeRules,String content) throws Exception {
+        public static String decrypt(String encodeRules,String content) throws Exception {
                 //1.构造密钥生成器，指定为AES算法,不区分大小写
                 KeyGenerator keygen=KeyGenerator.getInstance("AES");
                 //2.根据ecnodeRules规则初始化密钥生成器
