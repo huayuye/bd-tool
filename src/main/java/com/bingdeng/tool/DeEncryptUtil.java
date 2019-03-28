@@ -188,7 +188,7 @@ public class DeEncryptUtil {
          * @throws BadPaddingException
          * @throws IllegalBlockSizeException
          */
-        public static String decode(String encodeRules,String content) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException {
+        public static String decode(String encodeRules,String content) throws Exception {
                 //1.构造密钥生成器，指定为AES算法,不区分大小写
                 KeyGenerator keygen=KeyGenerator.getInstance("AES");
                 //2.根据ecnodeRules规则初始化密钥生成器
@@ -205,7 +205,7 @@ public class DeEncryptUtil {
                 //7.初始化密码器，第一个参数为加密(Encrypt_mode)或者解密(Decrypt_mode)操作，第二个参数为使用的KEY
                 cipher.init(Cipher.DECRYPT_MODE, key);
                 //8.将加密并编码后的内容解码成字节数组
-                byte [] byte_content= new BASE64Decoder().decodeBuffer(content);
+                byte [] byte_content= BASE64.decode(content);
                 /*
                  * 解密
                  */
@@ -226,7 +226,7 @@ public class DeEncryptUtil {
         /**
          * 用私钥对信息生成数字签名
          *
-         * @param data
+         * @param dataContent
          *            加密数据
          * @param privateKey
          *            私钥
@@ -234,7 +234,8 @@ public class DeEncryptUtil {
          * @return
          * @throws Exception
          */
-        public static String sign(byte[] data, String privateKey) throws Exception {
+        public static String sign(String dataContent, String privateKey) throws Exception {
+            byte[] data = BASE64.decode(dataContent);
             // 解密由base64编码的私钥
             byte[] keyBytes = BASE64.decode(privateKey);
             // 构造PKCS8EncodedKeySpec对象
@@ -253,7 +254,7 @@ public class DeEncryptUtil {
         /**
          * 校验数字签名
          *
-         * @param data
+         * @param dataContent
          *            加密数据
          * @param publicKey
          *            公钥
@@ -264,8 +265,9 @@ public class DeEncryptUtil {
          * @throws Exception
          *
          */
-        public static boolean verify(byte[] data, String publicKey, String sign)
+        public static boolean verify(String dataContent, String publicKey, String sign)
                 throws Exception {
+            byte[] data = BASE64.decode(dataContent);
             // 解密由base64编码的公钥
             byte[] keyBytes = BASE64.decode(publicKey);
             // 构造X509EncodedKeySpec对象
@@ -281,63 +283,19 @@ public class DeEncryptUtil {
             return signature.verify(BASE64.decode(sign));
         }
 
-        /**
-         * 解密<br>
-         * 用私钥解密
-         *
-         * @param data
-         * @param key
-         * @return
-         * @throws Exception
-         */
-        public static byte[] decryptByPrivateKey(byte[] data, String key)
-                throws Exception {
-            // 对密钥解密
-            byte[] keyBytes = BASE64.decode(key);
-            // 取得私钥
-            PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(keyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance(BD_KEY_ALGORITHM);
-            Key privateKey = keyFactory.generatePrivate(pkcs8KeySpec);
-            // 对数据解密
-            Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            return cipher.doFinal(data);
-        }
-
-        /**
-         * 解密<br>
-         * 用公钥解密
-         *
-         * @param data
-         * @param key
-         * @return
-         * @throws Exception
-         */
-        public static byte[] decryptByPublicKey(byte[] data, String key)
-                throws Exception {
-            // 对密钥解密
-            byte[] keyBytes = BASE64.decode(key);
-            // 取得公钥
-            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(keyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance(BD_KEY_ALGORITHM);
-            Key publicKey = keyFactory.generatePublic(x509KeySpec);
-            // 对数据解密
-            Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
-            cipher.init(Cipher.DECRYPT_MODE, publicKey);
-            return cipher.doFinal(data);
-        }
 
         /**
          * 加密<br>
          * 用公钥加密
          *
-         * @param data
+         * @param dataContent
          * @param key
          * @return
          * @throws Exception
          */
-        public static byte[] encryptByPublicKey(byte[] data, String key)
+        public static String encryptByPublicKey(String dataContent, String key)
                 throws Exception {
+            byte[] data = dataContent.getBytes("utf-8");
             // 对公钥解密
             byte[] keyBytes = BASE64.decode(key);
             // 取得公钥
@@ -347,20 +305,21 @@ public class DeEncryptUtil {
             // 对数据加密
             Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            return cipher.doFinal(data);
+            return BASE64.encode(cipher.doFinal(data));
         }
 
         /**
          * 加密<br>
          * 用私钥加密
          *
-         * @param data
+         * @param dataContent
          * @param key
          * @return
          * @throws Exception
          */
-        public static byte[] encryptByPrivateKey(byte[] data, String key)
+        public static String encryptByPrivateKey(String dataContent, String key)
                 throws Exception {
+            byte[] data = dataContent.getBytes("utf-8");
             // 对密钥解密
             byte[] keyBytes = BASE64.decode(key);
             // 取得私钥
@@ -370,8 +329,59 @@ public class DeEncryptUtil {
             // 对数据加密
             Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
             cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-            return cipher.doFinal(data);
+            return BASE64.encode(cipher.doFinal(data));
         }
+
+
+        /**
+         * 解密<br>
+         * 用私钥解密
+         *
+         * @param dataContent
+         * @param key
+         * @return
+         * @throws Exception
+         */
+        public static String decryptByPrivateKey(String dataContent, String key)
+                throws Exception {
+            byte[] data = BASE64.decode(dataContent);
+            // 对密钥解密
+            byte[] keyBytes = BASE64.decode(key);
+            // 取得私钥
+            PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance(BD_KEY_ALGORITHM);
+            Key privateKey = keyFactory.generatePrivate(pkcs8KeySpec);
+            // 对数据解密
+            Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            return new String(cipher.doFinal(data),"utf-8");
+        }
+
+        /**
+         * 解密<br>
+         * 用公钥解密
+         *
+         * @param dataContent
+         * @param key
+         * @return
+         * @throws Exception
+         */
+        public static String decryptByPublicKey(String dataContent, String key)
+                throws Exception {
+            byte[] data = BASE64.decode(dataContent);
+            // 对密钥解密
+            byte[] keyBytes = BASE64.decode(key);
+            // 取得公钥
+            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance(BD_KEY_ALGORITHM);
+            Key publicKey = keyFactory.generatePublic(x509KeySpec);
+            // 对数据解密
+            Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
+            cipher.init(Cipher.DECRYPT_MODE, publicKey);
+            return new String (cipher.doFinal(data),"utf-8");
+        }
+
+
 
         /**
          * 取得私钥
