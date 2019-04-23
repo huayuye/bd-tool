@@ -43,8 +43,11 @@ public class SMBFileUtil {
 ////        readFile();
 ////        writeNetFile("xxxxxxxxxxx", "@xxxxxxxxxx", "https://avatar.csdn.net/9/B/1/3_u013092293.jpg", "smb://192.xxx.xxxx.xxx/share/test.jpg");
 //    }
-    private SMBFileUtil(){}
-    private static String[] nameSuffix = {"jpg","jpeg","png","pdf"};
+    private SMBFileUtil() {
+    }
+
+    private static String[] nameSuffix = {"jpg", "jpeg", "png", "pdf"};
+
     /**
      * Read the SMB file to local，读取smb文件到本地
      *
@@ -282,12 +285,13 @@ public class SMBFileUtil {
 
     /**
      * SMBJ protocol
+     *
      * @param smbPropertis
      * @param sourceFolderUrl
      * @param mkdirFlag
      * @return
      */
-    public static boolean isExistFolder(SMBPropertis smbPropertis, String sourceFolderUrl, boolean mkdirFlag){
+    public static boolean isExistFolder(SMBPropertis smbPropertis, String sourceFolderUrl, boolean mkdirFlag) {
         SmbConfig config = SmbConfig.builder().withTimeout(120, TimeUnit.SECONDS)
                 .withTimeout(120, TimeUnit.SECONDS) // 超时设置读，写和Transact超时（默认为60秒）
                 .withSoTimeout(180, TimeUnit.SECONDS) // Socket超时（默认为0秒）
@@ -297,22 +301,22 @@ public class SMBFileUtil {
         // 如果不设置超时时间	SMBClient client = new SMBClient();
         SMBClient client = new SMBClient(config);
         try {
-            Connection connection = client.connect(smbPropertis.getSmbDomain(),smbPropertis.getSmbPort());	// 如:123.123.123.123
-            AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(),smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
+            Connection connection = client.connect(smbPropertis.getSmbDomain(), smbPropertis.getSmbPort());    // 如:123.123.123.123
+            AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(), smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
             Session session = connection.authenticate(ac);
             // 连接共享文件夹
             DiskShare share = (DiskShare) session.connectShare(smbPropertis.getSmbShareFolder());
-            if(share.folderExists(sourceFolderUrl)){
+            if (share.folderExists(sourceFolderUrl)) {
                 return true;
             }
             //true,mkdir;
-            if(mkdirFlag){
+            if (mkdirFlag) {
                 share.mkdir(sourceFolderUrl);
                 return true;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            log.info("文件夹创建异常：{}",e.toString());
+            log.info("文件夹创建异常：{}", e.toString());
         } finally {
             if (client != null) {
                 client.close();
@@ -324,13 +328,14 @@ public class SMBFileUtil {
 
     /**
      * SMBJ protocol
+     *
      * @param smbPropertis
      * @param inputStream
      * @param smbDestFileUrl
      * @return
      */
-    public static String writeFile(SMBPropertis smbPropertis, InputStream inputStream,String smbDestFileUrl) {
-        String shareUrl = smbPropertis.getSmbProtocol()+"://"+smbPropertis.getSmbDomain()+((smbPropertis.getSmbPort()==null||smbPropertis.getSmbPort().equals(445))?"":(":"+String.valueOf(smbPropertis.getSmbPort())))+"/"+smbPropertis.getSmbShareFolder();
+    public static String writeFile(SMBPropertis smbPropertis, InputStream inputStream, String smbDestFileUrl) {
+        String shareUrl = smbPropertis.getSmbProtocol() + "://" + smbPropertis.getSmbDomain() + ((smbPropertis.getSmbPort() == null || smbPropertis.getSmbPort().equals(445)) ? "" : (":" + String.valueOf(smbPropertis.getSmbPort()))) + "/" + smbPropertis.getSmbShareFolder();
         // 设置超时时间(可选)
         SmbConfig config = SmbConfig.builder().withTimeout(120, TimeUnit.SECONDS)
                 .withTimeout(120, TimeUnit.SECONDS) // 超时设置读，写和Transact超时（默认为60秒）
@@ -342,8 +347,8 @@ public class SMBFileUtil {
         SMBClient client = new SMBClient(config);
 
         try {
-            Connection connection = client.connect(smbPropertis.getSmbDomain(),smbPropertis.getSmbPort());	// 如:123.123.123.123
-            AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(),smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
+            Connection connection = client.connect(smbPropertis.getSmbDomain(), smbPropertis.getSmbPort());    // 如:123.123.123.123
+            AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(), smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
             Session session = connection.authenticate(ac);
             // 连接共享文件夹
             DiskShare share = (DiskShare) session.connectShare(smbPropertis.getSmbShareFolder());
@@ -353,16 +358,16 @@ public class SMBFileUtil {
             OutputStream outputStream1 = smbFileWrite.getOutputStream();
             byte[] buffer = new byte[2048];
             int len = -1;
-            while((len=inputStream.read(buffer))!=-1){
+            while ((len = inputStream.read(buffer)) != -1) {
                 //将内容写入到smb服务上的文件
-                outputStream1.write(buffer,0,len);
+                outputStream1.write(buffer, 0, len);
             }
             outputStream1.flush();
             outputStream1.close();
-            return shareUrl+"/"+smbDestFileUrl;
+            return shareUrl + "/" + smbDestFileUrl;
         } catch (Exception e) {
             e.printStackTrace();
-            log.info("文件存储异常：{}",e.toString());
+            log.info("文件存储异常：{}", e.toString());
         } finally {
             if (client != null) {
                 client.close();
@@ -373,13 +378,14 @@ public class SMBFileUtil {
 
     /**
      * SMBJ protocol
+     *
      * @param smbPropertis
      * @param smbSourceFileUrl
      * @param outputStream
      * @return
      */
     public static boolean readFile(SMBPropertis smbPropertis, String smbSourceFileUrl, OutputStream outputStream) {
-        String shareUrl = smbPropertis.getSmbProtocol()+"://"+smbPropertis.getSmbDomain()+((smbPropertis.getSmbPort()==null||smbPropertis.getSmbPort().equals(445))?"":(":"+String.valueOf(smbPropertis.getSmbPort())))+"/"+smbPropertis.getSmbShareFolder();
+        String shareUrl = smbPropertis.getSmbProtocol() + "://" + smbPropertis.getSmbDomain() + ((smbPropertis.getSmbPort() == null || smbPropertis.getSmbPort().equals(445)) ? "" : (":" + String.valueOf(smbPropertis.getSmbPort()))) + "/" + smbPropertis.getSmbShareFolder();
         // 设置超时时间(可选)
         SmbConfig config = SmbConfig.builder().withTimeout(120, TimeUnit.SECONDS)
                 .withTimeout(120, TimeUnit.SECONDS) // 超时设置读，写和Transact超时（默认为60秒）
@@ -390,20 +396,20 @@ public class SMBFileUtil {
         SMBClient client = new SMBClient(config);
 
         try {
-            Connection connection = client.connect(smbPropertis.getSmbDomain(),smbPropertis.getSmbPort());	// 如:123.123.123.123
-            AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(),smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
+            Connection connection = client.connect(smbPropertis.getSmbDomain(), smbPropertis.getSmbPort());    // 如:123.123.123.123
+            AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(), smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
             Session session = connection.authenticate(ac);
             // 连接共享文件夹
             DiskShare share = (DiskShare) session.connectShare(smbPropertis.getSmbShareFolder());
-            String downFileName = smbSourceFileUrl.substring(smbSourceFileUrl.lastIndexOf("/")+1);
-            String downFileFolder = smbSourceFileUrl.replace(shareUrl,"");
-            downFileFolder = downFileFolder.replace(downFileName,"").substring(1);
+            String downFileName = smbSourceFileUrl.substring(smbSourceFileUrl.lastIndexOf("/") + 1);
+            String downFileFolder = smbSourceFileUrl.replace(shareUrl, "");
+            downFileFolder = downFileFolder.replace(downFileName, "").substring(1);
 //            downFileFolder格式示例:如（share/image/file.png,share是共享文件夹，则downFileFolder等于image/,downFileName等于file.png)
             for (FileIdBothDirectoryInformation f : share.list(downFileFolder, downFileName)) {
-                String filePath =downFileFolder+ f.getFileName();
+                String filePath = downFileFolder + f.getFileName();
 //                filePath格式示例：共享文件夹之后的文件路径，如（share/image/file.png,share是共享文件夹，则filePath等于image/file.png）
                 if (share.fileExists(filePath)) {
-                    log.info("正在下载文件:{}" , f.getFileName());
+                    log.info("正在下载文件:{}", f.getFileName());
 
                     File smbFileRead = share.openFile(filePath, EnumSet.of(AccessMask.GENERIC_READ), null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OPEN, null);
                     InputStream in = smbFileRead.getInputStream();
@@ -414,16 +420,16 @@ public class SMBFileUtil {
                     }
                     outputStream.flush();
                     outputStream.close();
-                    log.info("文件下载成功:{}",filePath);
+                    log.info("文件下载成功:{}", filePath);
                     return true;
                 } else {
-                    log.info("文件不存在:{}",filePath);
+                    log.info("文件不存在:{}", filePath);
                     return false;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            log.info("文件读取异常：{}",e.toString());
+            log.info("文件读取异常：{}", e.toString());
         } finally {
             if (client != null) {
                 client.close();
@@ -435,16 +441,17 @@ public class SMBFileUtil {
 
     /**
      * SMBJ protocol
+     *
      * @param smbPropertis
      * @param files
      * @return
      */
-    public static  Map<String,Set<String>> writeFiles(SMBPropertis smbPropertis,List<MultipartFile> files) {
+    public static Map<String, Set<String>> writeFiles(SMBPropertis smbPropertis, List<MultipartFile> files) {
 
-        Map<String,Set<String>> resultMap = new HashMap<String,Set<String>>(2);
+        Map<String, Set<String>> resultMap = new HashMap<String, Set<String>>(2);
         resultMap.put("fail", Collections.EMPTY_SET);
-        resultMap.put("success",Collections.EMPTY_SET);
-        String shareUrl = smbPropertis.getSmbProtocol()+"://"+smbPropertis.getSmbDomain()+((smbPropertis.getSmbPort()==null||smbPropertis.getSmbPort().equals(445))?"":(":"+String.valueOf(smbPropertis.getSmbPort())))+ "/" +smbPropertis.getSmbShareFolder();
+        resultMap.put("success", Collections.EMPTY_SET);
+        String shareUrl = smbPropertis.getSmbProtocol() + "://" + smbPropertis.getSmbDomain() + ((smbPropertis.getSmbPort() == null || smbPropertis.getSmbPort().equals(445)) ? "" : (":" + String.valueOf(smbPropertis.getSmbPort()))) + "/" + smbPropertis.getSmbShareFolder();
         // 设置超时时间(可选)
         SmbConfig config = SmbConfig.builder().withTimeout(120, TimeUnit.SECONDS)
                 .withTimeout(120, TimeUnit.SECONDS) // 超时设置读，写和Transact超时（默认为60秒）
@@ -456,8 +463,8 @@ public class SMBFileUtil {
         SMBClient client = new SMBClient(config);
         DiskShare share = null;
         try {
-            Connection connection = client.connect(smbPropertis.getSmbDomain(),smbPropertis.getSmbPort());	// 如:123.123.123.123
-            AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(),smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
+            Connection connection = client.connect(smbPropertis.getSmbDomain(), smbPropertis.getSmbPort());    // 如:123.123.123.123
+            AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(), smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
             Session session = connection.authenticate(ac);
             // 连接共享文件夹
             share = (DiskShare) session.connectShare(smbPropertis.getSmbShareFolder());
@@ -465,7 +472,7 @@ public class SMBFileUtil {
             if (client != null) {
                 client.close();
             }
-            log.info("连接共享文件夹异常：{}",e.toString());
+            log.info("连接共享文件夹异常：{}", e.toString());
             return resultMap;
         }
 
@@ -473,60 +480,60 @@ public class SMBFileUtil {
         String fileDir = null;
         String toDayDirName = null;
         String fileNameSuffix = null;
-        Set<String> successList = new HashSet<String>(files!=null?files.size():1);
-        Set<String> failList = new HashSet<String>(files!=null?files.size():1);
+        Set<String> successList = new HashSet<String>(files != null ? files.size() : 1);
+        Set<String> failList = new HashSet<String>(files != null ? files.size() : 1);
         String originalFilename = null;
         InputStream inputStream = null;
         OutputStream outputStream = null;
         byte[] buffer = null;
         int len = -1;
-        for(MultipartFile file : files){
+        for (MultipartFile file : files) {
             originalFilename = file.getOriginalFilename();
-            fileNameSuffix = originalFilename.substring(originalFilename.lastIndexOf(".")+1);
+            fileNameSuffix = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
             //不符合语序的格式
-            if(!judgeFileNameSuffix(fileNameSuffix)){
-                log.error("Invalid File Format:{}",originalFilename);
+            if (!judgeFileNameSuffix(fileNameSuffix)) {
+                log.error("Invalid File Format:{}", originalFilename);
                 failList.add(originalFilename);
                 continue;
             }
             //按日期分文件夹
             toDayDirName = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             //默认为图片文件夹路径
-            fileDir = smbPropertis.getSmbImageFolder()+toDayDirName;
+            fileDir = smbPropertis.getSmbImageFolder() + toDayDirName;
             //pdf文件
-            if("pdf".equals(fileNameSuffix)){
-                fileDir = smbPropertis.getSmbPdfFolder()+toDayDirName;
+            if ("pdf".equals(fileNameSuffix)) {
+                fileDir = smbPropertis.getSmbPdfFolder() + toDayDirName;
             }
             //判断文件夹是否存在，不存在则创建
-            if(!(share.folderExists(fileDir))){
+            if (!(share.folderExists(fileDir))) {
                 share.mkdir(fileDir);
             }
-            fileUrl = fileDir+ "/" +RandomUtil.getRandom()+"."+fileNameSuffix;
+            fileUrl = fileDir + "/" + RandomUtil.getRandom() + "." + fileNameSuffix;
             //smbDestFileUrl格式示例：folder/log/file.txt
-            com.hierynomus.smbj.share.File smbFileWrite = share.openFile(fileUrl, EnumSet.of(AccessMask.GENERIC_WRITE), null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF,null);
+            com.hierynomus.smbj.share.File smbFileWrite = share.openFile(fileUrl, EnumSet.of(AccessMask.GENERIC_WRITE), null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, null);
             outputStream = smbFileWrite.getOutputStream();
             buffer = new byte[2048];
             len = -1;
             try {
-                inputStream=file.getInputStream();
-                while((len=inputStream.read(buffer))!=-1){
+                inputStream = file.getInputStream();
+                while ((len = inputStream.read(buffer)) != -1) {
                     //将内容写入到smb服务上的文件
-                    outputStream.write(buffer,0,len);
+                    outputStream.write(buffer, 0, len);
                 }
                 outputStream.flush();
-            }catch (IOException e) {
-                log.error("Image Upload Fail",originalFilename);
+            } catch (IOException e) {
+                log.error("Image Upload Fail", originalFilename);
                 failList.add(originalFilename);
                 continue;
-            }finally {
-                if(outputStream!=null){
+            } finally {
+                if (outputStream != null) {
                     try {
                         outputStream.close();
                     } catch (IOException e) {
                         log.error("Output IO Close Fail");
                     }
                 }
-                if(inputStream!=null){
+                if (inputStream != null) {
                     try {
                         inputStream.close();
                     } catch (IOException e) {
@@ -534,13 +541,13 @@ public class SMBFileUtil {
                     }
                 }
             }
-            successList.add(shareUrl+ "/" +fileUrl);
+            successList.add(shareUrl + "/" + fileUrl);
         }
         if (client != null) {
             client.close();
         }
-        resultMap.put("fail",failList);
-        resultMap.put("success",successList);
+        resultMap.put("fail", failList);
+        resultMap.put("success", successList);
         return resultMap;
     }
 
@@ -550,18 +557,19 @@ public class SMBFileUtil {
         urls.add("smb://10.60.178.251/share/image/2019-03-19/201903191602f02b45.jpg");
         urls.add("smb://10.60.178.251/share/image/2019-03-19/20190319160202a45a.jpg");
 
-        readFiles(new SMBPropertis(),urls);
+        readFiles(new SMBPropertis(), urls);
     }
 
     /**
      * SMBJ protocol
+     *
      * @param smbPropertis
      * @param smbSourceFileUrls
      * @return
      */
     public static List<byte[]> readFiles(SMBPropertis smbPropertis, List<String> smbSourceFileUrls) {
         List<byte[]> outputBytes = new ArrayList<>();
-        String shareUrl = smbPropertis.getSmbProtocol()+"://"+smbPropertis.getSmbDomain()+((smbPropertis.getSmbPort()==null||smbPropertis.getSmbPort().equals(445))?"":(":"+String.valueOf(smbPropertis.getSmbPort())))+"/"+smbPropertis.getSmbShareFolder();
+        String shareUrl = smbPropertis.getSmbProtocol() + "://" + smbPropertis.getSmbDomain() + ((smbPropertis.getSmbPort() == null || smbPropertis.getSmbPort().equals(445)) ? "" : (":" + String.valueOf(smbPropertis.getSmbPort()))) + "/" + smbPropertis.getSmbShareFolder();
         // 设置超时时间(可选)
         SmbConfig config = SmbConfig.builder().withTimeout(120, TimeUnit.SECONDS)
                 .withTimeout(120, TimeUnit.SECONDS) // 超时设置读，写和Transact超时（默认为60秒）
@@ -570,17 +578,17 @@ public class SMBFileUtil {
                 .build();
         // 如果不设置超时时间	SMBClient client = new SMBClient();
         SMBClient client = new SMBClient(config);
-        Connection connection = null;	// 如:123.123.123.123
+        Connection connection = null;    // 如:123.123.123.123
         try {
-            connection = client.connect(smbPropertis.getSmbDomain(),smbPropertis.getSmbPort());
+            connection = client.connect(smbPropertis.getSmbDomain(), smbPropertis.getSmbPort());
         } catch (IOException e) {
             if (client != null) {
                 client.close();
             }
-            log.info("Connection Fail" , e.toString());
+            log.info("Connection Fail", e.toString());
             return outputBytes;
         }
-        AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(),smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
+        AuthenticationContext ac = new AuthenticationContext(smbPropertis.getSmbUsername(), smbPropertis.getSmbPassword().toCharArray(), smbPropertis.getSmbDomain());
         Session session = connection.authenticate(ac);
         // 连接共享文件夹
         DiskShare share = (DiskShare) session.connectShare(smbPropertis.getSmbShareFolder());
@@ -588,17 +596,17 @@ public class SMBFileUtil {
         String downFileFolder = null;
         String filePath = null;
         ByteArrayOutputStream outputStream = null;
-        for(String smbSourceFileUrl:smbSourceFileUrls){
-            downFileName = smbSourceFileUrl.substring(smbSourceFileUrl.lastIndexOf("/")+1);
-            downFileFolder = smbSourceFileUrl.replace(shareUrl,"").replace(downFileName,"").substring(1);
+        for (String smbSourceFileUrl : smbSourceFileUrls) {
+            downFileName = smbSourceFileUrl.substring(smbSourceFileUrl.lastIndexOf("/") + 1);
+            downFileFolder = smbSourceFileUrl.replace(shareUrl, "").replace(downFileName, "").substring(1);
 //            downFileFolder格式示例:如（share/image/file.png,share是共享文件夹，则downFileFolder等于image/,downFileName等于file.png)
             filePath = null;
             for (FileIdBothDirectoryInformation f : share.list(downFileFolder, downFileName)) {
-                filePath =downFileFolder+ f.getFileName();
+                filePath = downFileFolder + f.getFileName();
 //                filePath格式示例：共享文件夹之后的文件路径，如（share/image/file.png,share是共享文件夹，则filePath等于image/file.png）
                 if (share.fileExists(filePath)) {
                     outputStream = new ByteArrayOutputStream();
-                    log.info("正在下载文件:{}" , f.getFileName());
+                    log.info("正在下载文件:{}", f.getFileName());
                     File smbFileRead = share.openFile(filePath, EnumSet.of(AccessMask.GENERIC_READ), null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OPEN, null);
                     InputStream in = smbFileRead.getInputStream();
                     byte[] buffer = new byte[4096];
@@ -609,15 +617,15 @@ public class SMBFileUtil {
                         }
                         outputStream.flush();
                         outputBytes.add(outputStream.toByteArray());
-                        log.info("File Load Successfully:{}",filePath);
+                        log.info("File Load Successfully:{}", filePath);
                     } catch (Exception e) {
-                        log.error("File Load Fail:{},msg:{}",filePath,e.toString());
-                    }finally {
-                        if(outputStream!=null){
+                        log.error("File Load Fail:{},msg:{}", filePath, e.toString());
+                    } finally {
+                        if (outputStream != null) {
                             try {
                                 outputStream.close();
                             } catch (IOException e) {
-                                log.error("Io Close Fail：{}",e.toString());
+                                log.error("Io Close Fail：{}", e.toString());
                             }
                         }
                     }
@@ -628,23 +636,23 @@ public class SMBFileUtil {
         if (client != null) {
             client.close();
         }
-        if(outputBytes.size()==0){
+        if (outputBytes.size() == 0) {
             log.info("文件下载失败");
-        }else if(outputBytes.size()<smbSourceFileUrls.size()){
+        } else if (outputBytes.size() < smbSourceFileUrls.size()) {
             log.info("部分文件下载成功");
-        }else if(outputBytes.size()==smbSourceFileUrls.size()){
+        } else if (outputBytes.size() == smbSourceFileUrls.size()) {
             log.info("全部文件下载成功");
         }
         return outputBytes;
     }
 
-    public static boolean judgeFileNameSuffix(String fileNameSuffix){
-        if(StringUtils.isBlank(fileNameSuffix)){
+    public static boolean judgeFileNameSuffix(String fileNameSuffix) {
+        if (StringUtils.isBlank(fileNameSuffix)) {
             return false;
         }
 
-        for(String suffix:nameSuffix){
-            if(suffix.equals(fileNameSuffix.toLowerCase().trim())){
+        for (String suffix : nameSuffix) {
+            if (suffix.equals(fileNameSuffix.toLowerCase().trim())) {
                 return true;
             }
         }

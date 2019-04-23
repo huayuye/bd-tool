@@ -46,12 +46,11 @@ public class EmailUtil {
     }
 
     /**
-     * @Method: createSimpleMail
-     * @Description: 创建一封只包含文本的邮件
-     *
      * @param session
      * @return
      * @throws Exception
+     * @Method: createSimpleMail
+     * @Description: 创建一封只包含文本的邮件
      */
     public static MimeMessage createSimpleMail(Session session)
             throws Exception {
@@ -72,6 +71,7 @@ public class EmailUtil {
 
     /**
      * 创建嵌套图片的邮件
+     *
      * @param session
      * @return
      * @throws Exception
@@ -111,12 +111,13 @@ public class EmailUtil {
     }
 
     /**
-     *创建带附件的邮件
+     * 创建带附件的邮件
+     *
      * @param session
      * @return
      * @throws Exception
      */
-    public static MimeMessage createAttachMail(Session session) throws Exception{
+    public static MimeMessage createAttachMail(Session session) throws Exception {
         MimeMessage message = new MimeMessage(session);
 
         //设置邮件的基本信息
@@ -153,6 +154,7 @@ public class EmailUtil {
 
     /**
      * 创建带附件及图片的邮件
+     *
      * @param session
      * @return
      * @throws Exception
@@ -168,7 +170,7 @@ public class EmailUtil {
 
         //正文
         MimeBodyPart text = new MimeBodyPart();
-        text.setContent("xxx这是xxxx<br/><img src='cid:aaa.jpg'>","text/html;charset=UTF-8");
+        text.setContent("xxx这是xxxx<br/><img src='cid:aaa.jpg'>", "text/html;charset=UTF-8");
 
         //图片
         MimeBodyPart image = new MimeBodyPart();

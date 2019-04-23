@@ -27,12 +27,12 @@ public class Image2PdfUtil {
             doc.open();//打开文档
             for (int i = 0; i < imageUrllist.size(); i++) {  //循环图片List，将图片加入到pdf中
                 doc.newPage();  //在pdf创建一页
-                Image png1 =Image.getInstance(imageUrllist.get(i)); //通过文件路径获取image
+                Image png1 = Image.getInstance(imageUrllist.get(i)); //通过文件路径获取image
                 float heigth = png1.getHeight();
                 float width = png1.getWidth();
                 int percent = getPercent(heigth, width);
                 png1.setAlignment(Image.MIDDLE);
-                png1.scalePercent(percent+3);// 表示是原来图像的比例;
+                png1.scalePercent(percent + 3);// 表示是原来图像的比例;
                 doc.add(png1);
             }
             doc.close();
@@ -63,6 +63,7 @@ public class Image2PdfUtil {
         p = Math.round(p2);
         return p;
     }
+
     public static int getPercent2(float h, float w) {
         int p = 0;
         float p2 = 0.0f;
@@ -76,7 +77,7 @@ public class Image2PdfUtil {
         list.add("C:/htmlpdf/发票1.png");
         list.add("C:/htmlpdf/发票2.png");
         list.add("C:/htmlpdf/发票3.png");
-        Pdf(list,"C:/htmlpdf/发票.pdf");
+        Pdf(list, "C:/htmlpdf/发票.pdf");
     }
 
 

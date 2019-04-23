@@ -54,16 +54,16 @@ public class HttpClientUtil {
      * send http post
      *
      * @param url
-     * @param map param map
+     * @param map      param map
      * @param encoding
      * @return
      * @throws ParseException
      */
-    public static String sendHttpPost(String url, Map<String,String> map, String encoding) throws ParseException {
+    public static String sendHttpPost(String url, Map<String, String> map, String encoding) throws ParseException {
         String body = null;
         HttpPost httpPost = null;
         CloseableHttpResponse response = null;
-        try{
+        try {
 //create httpclient
             CloseableHttpClient client = HttpClients.createDefault();
 //create post way
@@ -76,14 +76,14 @@ public class HttpClientUtil {
 //List<NameValuePair> nvps = getNameValuePairs(map);
             JSONObject jsonObject = new JSONObject();
             for (Map.Entry<String, String> entry : map.entrySet()) {
-                jsonObject.put(entry.getKey(),entry.getValue());
+                jsonObject.put(entry.getKey(), entry.getValue());
             }
             //set param
             StringEntity stringEntity = new StringEntity(jsonObject.toString(), encoding);
             stringEntity.setContentEncoding(encoding);
             httpPost.setEntity(stringEntity);
 //httpPost.setEntity(new UrlEncodedFormEntity(nvps, encoding));
-            log.info("request url:{},params:{}",url,map==null?null:map.toString());
+            log.info("request url:{},params:{}", url, map == null ? null : map.toString());
 //set header
 //【Content-type】、【User-Agent】
             httpPost.setHeader("Content-type", "application/json;charset=utf-8");
@@ -94,15 +94,15 @@ public class HttpClientUtil {
 //change result to String
                 body = EntityUtils.toString(entity, encoding);
             }
-        }catch (Exception e){
-            log.error("send httpPost fail,errorMsg:{}",e.toString());
-        }finally {
+        } catch (Exception e) {
+            log.error("send httpPost fail,errorMsg:{}", e.toString());
+        } finally {
 // releaseConnection
-            if(httpPost != null){
+            if (httpPost != null) {
                 try {
                     httpPost.releaseConnection();
                 } catch (Exception e) {
-                    log.error("close httpPost fail,errorMsg:{}",e.toString());
+                    log.error("close httpPost fail,errorMsg:{}", e.toString());
                 }
             }
         }
@@ -113,18 +113,18 @@ public class HttpClientUtil {
      * send https post ignoreCertificate
      *
      * @param url
-     * @param map paramMap
+     * @param map      paramMap
      * @param encoding
      * @return
      * @throws NoSuchAlgorithmException
      * @throws KeyManagementException
      * @throws IOException
      */
-    public static String sendHttpsPostIgnoreCertificate(String url, Map<String,String> map,String encoding){
+    public static String sendHttpsPostIgnoreCertificate(String url, Map<String, String> map, String encoding) {
         String body = null;
         HttpPost httpPost = null;
         CloseableHttpResponse response = null;
-        try{
+        try {
 //create https by ignoreCertificate
             SSLContext sslcontext = createIgnoreVerifySSL();
 // set http and https socket factory
@@ -146,14 +146,14 @@ public class HttpClientUtil {
 //List<NameValuePair> nvps = getNameValuePairs(map);
             JSONObject jsonObject = new JSONObject();
             for (Map.Entry<String, String> entry : map.entrySet()) {
-                jsonObject.put(entry.getKey(),entry.getValue());
+                jsonObject.put(entry.getKey(), entry.getValue());
             }
             //set param:发送Json格式的数据请求
             StringEntity stringEntity = new StringEntity(jsonObject.toString(), encoding);
             stringEntity.setContentEncoding(encoding);
             httpPost.setEntity(stringEntity);
 //httpPost.setEntity(new UrlEncodedFormEntity(nvps, encoding));
-            log.info("request url:{},params:{}",url,map==null?null:map.toString());
+            log.info("request url:{},params:{}", url, map == null ? null : map.toString());
 //set header
 //【Content-type】、【User-Agent】
             httpPost.setHeader("Content-type", "application/json;charset=utf-8");
@@ -166,15 +166,15 @@ public class HttpClientUtil {
                 body = EntityUtils.toString(entity, encoding);
             }
             EntityUtils.consume(entity);
-        }catch (Exception e){
-            log.error("send httpPost fail,errorMsg:{}",e.toString());
-        }finally {
+        } catch (Exception e) {
+            log.error("send httpPost fail,errorMsg:{}", e.toString());
+        } finally {
 // releaseConnection
-            if(httpPost != null){
+            if (httpPost != null) {
                 try {
                     httpPost.releaseConnection();
                 } catch (Exception e) {
-                    log.error("close httpPost fail,errorMsg:{}",e.toString());
+                    log.error("close httpPost fail,errorMsg:{}", e.toString());
                 }
             }
         }
@@ -185,7 +185,7 @@ public class HttpClientUtil {
      * send https post,withCertificate
      *
      * @param url
-     * @param map paramMap
+     * @param map      paramMap
      * @param encoding
      * @return
      * @throws ParseException
@@ -193,11 +193,11 @@ public class HttpClientUtil {
      * @throws KeyManagementException
      * @throws NoSuchAlgorithmException
      */
-    public static String sendHttpsPostWithCertificate(String url, Map<String,String> map,String encoding){
+    public static String sendHttpsPostWithCertificate(String url, Map<String, String> map, String encoding) {
         String body = null;
         HttpPost httpPost = null;
         CloseableHttpResponse response = null;
-        try{
+        try {
 //first param:certificate file path
 //second param:tomcat is password,you can replace yourself,if your password is empty，you can use "nopassword"
             SSLContext sslcontext = customCertificate("D:\\keys\\wsriakey", "tomcat");
@@ -219,7 +219,7 @@ public class HttpClientUtil {
             httpPost.setConfig(requestConfig);
 //built param
             List<NameValuePair> nvps = getNameValuePairs(map);
-            log.info("request url:{},params:{}",url,nvps.toString());
+            log.info("request url:{},params:{}", url, nvps.toString());
 //set param
             httpPost.setEntity(new UrlEncodedFormEntity(nvps, encoding));
 //set header
@@ -235,15 +235,15 @@ public class HttpClientUtil {
                 body = EntityUtils.toString(entity, encoding);
             }
             EntityUtils.consume(entity);
-        }catch (Exception e){
-            log.error("send httpPost fail,errorMsg:{}",e.toString());
-        }finally {
+        } catch (Exception e) {
+            log.error("send httpPost fail,errorMsg:{}", e.toString());
+        } finally {
 // releaseConnection
-            if(httpPost != null){
+            if (httpPost != null) {
                 try {
                     httpPost.releaseConnection();
                 } catch (Exception e) {
-                    log.error("close httpPost fail,errorMsg:{}",e.toString());
+                    log.error("close httpPost fail,errorMsg:{}", e.toString());
                 }
             }
         }
@@ -253,7 +253,7 @@ public class HttpClientUtil {
     /**
      * send http get
      */
-    public static String sendHttpGet(String url, Map<String,String> map,String encoding) {
+    public static String sendHttpGet(String url, Map<String, String> map, String encoding) {
         HttpGet httpGet = null;
         String body = null;
         try {
@@ -268,23 +268,23 @@ public class HttpClientUtil {
                     .setConnectTimeout(connectTimeOut).setConnectionRequestTimeout(requestTimeOut)
                     .setSocketTimeout(socketTimeOut).build();
             httpGet.setConfig(requestConfig);
-            log.info("request uri is:{}",httpGet.getURI());
+            log.info("request uri is:{}", httpGet.getURI());
 // excute
             CloseableHttpResponse response = httpclient.execute(httpGet);
 // get result
             HttpEntity entity = response.getEntity();
             if (entity != null) {
-                body = EntityUtils.toString(entity,encoding);
+                body = EntityUtils.toString(entity, encoding);
             }
         } catch (Exception e) {
-            log.error("send httpGet fail,errorMsg:{}",e.toString());
+            log.error("send httpGet fail,errorMsg:{}", e.toString());
         } finally {
 // releaseConnection
-            if(httpGet != null){
+            if (httpGet != null) {
                 try {
                     httpGet.releaseConnection();
                 } catch (Exception e) {
-                    log.error("close httpGet fail,errorMsg:{}",e.toString());
+                    log.error("close httpGet fail,errorMsg:{}", e.toString());
                 }
             }
         }
@@ -296,18 +296,18 @@ public class HttpClientUtil {
      * send https get,ignoreCertificate
      *
      * @param url
-     * @param map paramMap
+     * @param map      paramMap
      * @param encoding
      * @return
      * @throws NoSuchAlgorithmException
      * @throws KeyManagementException
      * @throws IOException
      */
-    public static String sendHttpsGetIgnoreCertificate(String url, Map<String,String> map,String encoding){
+    public static String sendHttpsGetIgnoreCertificate(String url, Map<String, String> map, String encoding) {
         String body = null;
         HttpGet httpGet = null;
         CloseableHttpResponse response = null;
-        try{
+        try {
 //create https by ignoreCertificate
             SSLContext sslcontext = createIgnoreVerifySSL();
 //set http and https socket factory
@@ -329,7 +329,7 @@ public class HttpClientUtil {
             List<NameValuePair> nvps = getNameValuePairs(map);
             String paramsStr = EntityUtils.toString(new UrlEncodedFormEntity(nvps, encoding));
             url = url + "?" + paramsStr;
-            log.info("request uri is:{}",httpGet.getURI());
+            log.info("request uri is:{}", httpGet.getURI());
 //excute
             response = client.execute(httpGet);
 //get result
@@ -337,15 +337,15 @@ public class HttpClientUtil {
             if (entity != null) {
                 body = EntityUtils.toString(entity, encoding);
             }
-        }catch (Exception e){
-            log.error("send httpGet fail,errorMsg:{}",e.toString());
-        }finally {
+        } catch (Exception e) {
+            log.error("send httpGet fail,errorMsg:{}", e.toString());
+        } finally {
 // releaseConnection
-            if(httpGet != null){
+            if (httpGet != null) {
                 try {
                     httpGet.releaseConnection();
                 } catch (Exception e) {
-                    log.error("close httpGet fail,errorMsg:{}",e.toString());
+                    log.error("close httpGet fail,errorMsg:{}", e.toString());
                 }
             }
         }
@@ -356,7 +356,7 @@ public class HttpClientUtil {
      * send https get,withCertificate
      *
      * @param url
-     * @param map paramMap
+     * @param map      paramMap
      * @param encoding
      * @return
      * @throws ParseException
@@ -364,11 +364,11 @@ public class HttpClientUtil {
      * @throws KeyManagementException
      * @throws NoSuchAlgorithmException
      */
-    public static String sendHttpsGetWithCertificate(String url, Map<String,String> map,String encoding){
+    public static String sendHttpsGetWithCertificate(String url, Map<String, String> map, String encoding) {
         String body = null;
         HttpGet httpGet = null;
         CloseableHttpResponse response = null;
-        try{
+        try {
 //first param:certificate file path
 //second param:password,tomcat is password,you can replace it with yourself,if your password is empty，you can use "nopassword"
             SSLContext sslcontext = customCertificate("D:\\keys\\wsriakey", "tomcat");
@@ -392,7 +392,7 @@ public class HttpClientUtil {
             List<NameValuePair> nvps = getNameValuePairs(map);
             String paramsStr = EntityUtils.toString(new UrlEncodedFormEntity(nvps, encoding));
             url = url + "?" + paramsStr;
-            log.info("request uri is:{}",httpGet.getURI());
+            log.info("request uri is:{}", httpGet.getURI());
 //excute
             response = client.execute(httpGet);
 //get result
@@ -401,15 +401,15 @@ public class HttpClientUtil {
                 body = EntityUtils.toString(entity, encoding);
             }
             EntityUtils.consume(entity);
-        }catch (Exception e){
-            log.error("send httpGet fail,errorMsg:{}",e.toString());
-        }finally {
+        } catch (Exception e) {
+            log.error("send httpGet fail,errorMsg:{}", e.toString());
+        } finally {
 // releaseConnection
-            if(httpGet != null){
+            if (httpGet != null) {
                 try {
                     httpGet.releaseConnection();
                 } catch (Exception e) {
-                    log.error("close httpGet fail,errorMsg:{}",e.toString());
+                    log.error("close httpGet fail,errorMsg:{}", e.toString());
                 }
             }
         }
@@ -418,12 +418,13 @@ public class HttpClientUtil {
 
     /**
      * built param
+     *
      * @param map
      * @return
      */
     private static List<NameValuePair> getNameValuePairs(Map<String, String> map) {
         List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-        if(map!=null){
+        if (map != null) {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 nvps.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
@@ -433,6 +434,7 @@ public class HttpClientUtil {
 
     /**
      * get response HTTP entity content
+     *
      * @param response
      * @param encoding
      * @return
@@ -473,17 +475,19 @@ public class HttpClientUtil {
                     java.security.cert.X509Certificate[] paramArrayOfX509Certificate,
                     String paramString) throws CertificateException {
             }
+
             @Override
             public void checkServerTrusted(
                     java.security.cert.X509Certificate[] paramArrayOfX509Certificate,
                     String paramString) throws CertificateException {
             }
+
             @Override
             public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                 return null;
             }
         };
-        sc.init(null, new TrustManager[] { trustManager }, null);
+        sc.init(null, new TrustManager[]{trustManager}, null);
         return sc;
     }
 
@@ -494,7 +498,7 @@ public class HttpClientUtil {
      * @param keyStorepass
      * @return
      */
-    private static SSLContext customCertificate(String keyStorePath, String keyStorepass){
+    private static SSLContext customCertificate(String keyStorePath, String keyStorepass) {
         SSLContext sc = null;
         FileInputStream instream = null;
         KeyStore trustStore = null;
@@ -503,13 +507,13 @@ public class HttpClientUtil {
             instream = new FileInputStream(new File(keyStorePath));
             trustStore.load(instream, keyStorepass.toCharArray());
             sc = SSLContexts.custom().loadTrustMaterial(trustStore, new TrustSelfSignedStrategy()).build();
-        } catch (KeyStoreException | NoSuchAlgorithmException| CertificateException | IOException | KeyManagementException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | KeyManagementException e) {
             e.printStackTrace();
         } finally {
             try {
                 instream.close();
             } catch (IOException e) {
-                log.error("close streamfail,errorMsg:{}",e.toString());
+                log.error("close streamfail,errorMsg:{}", e.toString());
             }
         }
         return sc;

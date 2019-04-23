@@ -30,6 +30,7 @@ public class MatrixUtil {
 
     /**
      * 生成矩阵，是一个简单的函数，参数固定，更多的是使用示范。
+     *
      * @param text
      * @return
      */
@@ -62,6 +63,7 @@ public class MatrixUtil {
 
     /**
      * 将指定的字符串生成二维码图片。简单的使用示例。
+     *
      * @param text
      * @param file
      * @param format
@@ -100,6 +102,7 @@ public class MatrixUtil {
     /**
      * 将字符串编成一维条码的矩阵
      * * @param str
+     *
      * @param width
      * @param height
      * @return
@@ -156,6 +159,7 @@ public class MatrixUtil {
 
     /**
      * 解码，需要javase包。
+     *
      * @param file
      * @return
      */

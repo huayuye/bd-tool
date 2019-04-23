@@ -39,27 +39,28 @@ public class Html2PdfUtil {
     /**
      * html to pdf
      * 对css支持不好,此方法的图片路径src,不支持base64,可支持网络路径（http://）和绝对路径
-     * @param templatePath ftl folder：模板路径，
-     *                     若是放在项目的resources下template/pdf/,则取后面的部分，如 template/pdf/
-     *                     也可以为本地绝对路径，如 c:/pdf
-     * @param templateName ftl name 模板名称 如 pdf.ftl
+     *
+     * @param templatePath  ftl folder：模板路径，
+     *                      若是放在项目的resources下template/pdf/,则取后面的部分，如 template/pdf/
+     *                      也可以为本地绝对路径，如 c:/pdf
+     * @param templateName  ftl name 模板名称 如 pdf.ftl
      * @param imageRootPath image resources folder 图片资源（绝对路径）
-     * @param pdfDestPath pdf file path 生成pdf的路径
-     * @param data data of replace ftl template content 数据
-     * @param isRotate pdf direction：true-crosswise 是否横向
-     * @param fontSize pdf font size 字体大小
+     * @param pdfDestPath   pdf file path 生成pdf的路径
+     * @param data          data of replace ftl template content 数据
+     * @param isRotate      pdf direction：true-crosswise 是否横向
+     * @param fontSize      pdf font size 字体大小
      * @param classLoader
      * @return
      */
-    public static String html2Pdf(String templatePath,String templateName,String imageRootPath, String pdfDestPath,Object data, boolean isRotate,float fontSize,ClassLoader classLoader){
-        try{
-            String fileContent=getContent(data,templatePath,templateName,classLoader);
+    public static String html2Pdf(String templatePath, String templateName, String imageRootPath, String pdfDestPath, Object data, boolean isRotate, float fontSize, ClassLoader classLoader) {
+        try {
+            String fileContent = getContent(data, templatePath, templateName, classLoader);
             // step 1
 //            Document document = new Document(PageSize.A4.rotate());
             Document document = null;
-            if(isRotate){
-                document =  new Document(PageSize.A4.rotate());
-            }else {
+            if (isRotate) {
+                document = new Document(PageSize.A4.rotate());
+            } else {
                 document = new Document(PageSize.A4);
             }
             // step 2
@@ -68,7 +69,7 @@ public class Html2PdfUtil {
             document.open();
 
             //设置字体大小
-            CssAppliers cssAppliers = new CssAppliersImpl(new XMLWorkerFontProvider(){
+            CssAppliers cssAppliers = new CssAppliersImpl(new XMLWorkerFontProvider() {
                 @Override
                 public Font getFont(final String fontname, String encoding, float size, final int style) {
                     try {
@@ -115,27 +116,28 @@ public class Html2PdfUtil {
             p.parse(new StringReader(fileContent));
             document.close();
             return pdfDestPath;
-        }catch (Exception e) {
-            throw new RuntimeException("html2Pdf process fail",e);
+        } catch (Exception e) {
+            throw new RuntimeException("html2Pdf process fail", e);
         }
     }
 
     /**
-     *html to pdf
+     * html to pdf
      * 支持css2.1
+     *
      * @param templatePath ftl folder 模板路径，
-     *      *                     若是放在项目的resources下template/pdf/,则取后面的部分，如 template/pdf/
-     *      *                     也可以为本地绝对路径，如 c:/pdf
+     *                     *                     若是放在项目的resources下template/pdf/,则取后面的部分，如 template/pdf/
+     *                     *                     也可以为本地绝对路径，如 c:/pdf
      *                     这里默认是放在resources下template/pdf/里面
      * @param templateName ftl name 模板名称 如 pdf.ftl
-     * @param pdfDestPath 生成pdf存放的路径
-     * @param data 数据
-     * @param classLoader 调用此方法的当前类的类加载器 this.getClass().getClassLoader()
+     * @param pdfDestPath  生成pdf存放的路径
+     * @param data         数据
+     * @param classLoader  调用此方法的当前类的类加载器 this.getClass().getClassLoader()
      * @return
      */
-    public static byte[] generatePdf(String templatePath,String templateName,String pdfDestPath,Object data,ClassLoader classLoader){
+    public static byte[] generatePdf(String templatePath, String templateName, String pdfDestPath, Object data, ClassLoader classLoader) {
         final String charsetName = "UTF-8";
-        String htmlContent=getContent(data,templatePath,templateName,classLoader);
+        String htmlContent = getContent(data, templatePath, templateName, classLoader);
         OutputStream out = null;
         ITextRenderer iTextRenderer = new ITextRenderer();
         ByteArrayOutputStream outputStream = null;
@@ -148,7 +150,7 @@ public class Html2PdfUtil {
             outputStream = new ByteArrayOutputStream();
             iTextRenderer.setDocument(doc, null);
             iTextRenderer.layout();
-            if(StringUtils.hasText(pdfDestPath)){
+            if (StringUtils.hasText(pdfDestPath)) {
                 File f = new File(pdfDestPath);
                 if (f != null && !f.getParentFile().exists()) {
                     f.getParentFile().mkdir();
@@ -162,21 +164,33 @@ public class Html2PdfUtil {
                     outputStream.write(buffer, 0, len);
                 }
                 outputStream.flush();
-            }else {
+            } else {
                 iTextRenderer.createPDF(outputStream);
             }
             return outputStream.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException("html2Pdf iTextRenderer fail",e);
+            throw new RuntimeException("html2Pdf iTextRenderer fail", e);
         } finally {
-            if (out!=null) {
-                try {out.close();} catch (IOException e) {e.printStackTrace();}
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-            if (outputStream!=null) {
-                try {outputStream.close();} catch (IOException e) { e.printStackTrace();}
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-            if (in!=null) {
-                try {in.close();} catch (IOException e) {e.printStackTrace(); }
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -185,17 +199,17 @@ public class Html2PdfUtil {
     /**
      * @description 获取模板
      */
-    private static String getContent(Object data,String templatePath,String templateName,ClassLoader classLoader){
+    private static String getContent(Object data, String templatePath, String templateName, ClassLoader classLoader) {
 
-        String templateFileName=templateName;//"packing_list_by_marshal.ftl";
-        String templateFilePath=templatePath;//"E:/pdfhtml";
-        try{
+        String templateFileName = templateName;//"packing_list_by_marshal.ftl";
+        String templateFilePath = templatePath;//"E:/pdfhtml";
+        try {
             Configuration config = new Configuration(Configuration.VERSION_2_3_25);//FreeMarker配置
             config.setDefaultEncoding("UTF-8");
             //注意这里是模板所在文件夹，不是文件，如/fold/ 或 c:/fold/
 //            config.setDirectoryForTemplateLoading(new File(templateFilePath));
             //classLoader 调用类的classLoader,templateFilePath 指在项目resources下的文件夹路径：如template/pdf/
-            config.setClassLoaderForTemplateLoading(classLoader,templateFilePath);
+            config.setClassLoaderForTemplateLoading(classLoader, templateFilePath);
             config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
             config.setLogTemplateExceptions(false);
             Template template = config.getTemplate(templateFileName);//根据模板名称 获取对应模板
@@ -205,8 +219,8 @@ public class Html2PdfUtil {
             String html = writer.toString();
             writer.close();
             return html;
-        }catch (Exception ex){
-            throw new RuntimeException("FreeMarkerUtil process fail",ex);
+        } catch (Exception ex) {
+            throw new RuntimeException("FreeMarkerUtil process fail", ex);
         }
     }
 

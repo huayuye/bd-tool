@@ -12,9 +12,8 @@ import java.util.UUID;
 public class RandomUtil {
 
 
-
     public synchronized static String getRandom() {
-        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))+UUID.randomUUID().toString().replace("-","").substring(26);
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm")) + UUID.randomUUID().toString().replace("-", "").substring(26);
     }
 
 }

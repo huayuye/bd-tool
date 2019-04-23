@@ -13,17 +13,17 @@ import java.util.Iterator;
 public class JsonUtil {
 
 
-     public static void analyzeJson(Object objJson){
+    public static void analyzeJson(Object objJson) {
         //        如果obj为json数组
-        if(objJson instanceof JSONArray){
-            JSONArray objArray = (JSONArray)objJson;
+        if (objJson instanceof JSONArray) {
+            JSONArray objArray = (JSONArray) objJson;
             for (int i = 0; i < objArray.size(); i++) {
                 analyzeJson(objArray.get(i));
             }
         }
         //        如果为json对象
-        else if(objJson instanceof JSONObject){
-            JSONObject jsonObject = (JSONObject)objJson;
+        else if (objJson instanceof JSONObject) {
+            JSONObject jsonObject = (JSONObject) objJson;
             /*---------------------------------------------此段属于自己的业务逻辑1，视具体情况而定-----------------------------*/
             //每个对象中的id的值可以在这里获取（这是为了将这里的id赋值给pid）：
 //            Long id = 0L;
@@ -36,12 +36,12 @@ public class JsonUtil {
             // 这里独立执行一次while(it.hasNext()){}即可获取到，不能在下面的逻辑获取，否则会有属性顺序的隐患，导致获取到的所有id一样
             /*---------------------------------------------此段属于自己的业务逻辑1，视具体情况而定---结束--------------------------*/
             Iterator it = jsonObject.keys();
-            while(it.hasNext()){
+            while (it.hasNext()) {
                 String key = it.next().toString();
                 Object object = jsonObject.get(key);
                 // 如果得到的是数组
-                if(object instanceof JSONArray){
-                    JSONArray objArray = (JSONArray)object;
+                if (object instanceof JSONArray) {
+                    JSONArray objArray = (JSONArray) object;
                     /*---------------------------------------------此段属于自己的业务逻辑2，视具体情况而定-----------------------------*/
                     //如有给pid等类似赋值的，可以在这里实现
 //                    for (int i = 0; i < objArray.size(); i++) {
@@ -52,12 +52,12 @@ public class JsonUtil {
                     analyzeJson(objArray);
                 }
                 // 如果key中是一个json对象
-                else if(object instanceof JSONObject){
-                    analyzeJson((JSONObject)object);
+                else if (object instanceof JSONObject) {
+                    analyzeJson((JSONObject) object);
                 }
                 // 如果key中是其他
-                else{
-                    System.out.println("["+key+"]:"+object.toString()+" ");
+                else {
+                    System.out.println("[" + key + "]:" + object.toString() + " ");
                 }
             }
         }
@@ -109,8 +109,6 @@ public class JsonUtil {
 //        }
 //        return childList;
 //    }
-
-
 
 
 }
