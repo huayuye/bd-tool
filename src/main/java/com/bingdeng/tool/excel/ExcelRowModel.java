@@ -1,4 +1,4 @@
-package com.bingdeng.tool;
+package com.bingdeng.tool.excel;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;
@@ -10,7 +10,7 @@ import java.util.Date;
  * @Date: 2019/4/23
  * @Desc:
  **/
-public class ExcelReaderRowModel extends BaseRowModel {
+public class ExcelRowModel extends BaseRowModel {
 
     /**
      * ExcelProperty 中：
@@ -20,24 +20,36 @@ public class ExcelReaderRowModel extends BaseRowModel {
      *  规则：比如 name和identifyCard，都有姓名且开头且两行，那么第一、二列的表头有两行，第一行则是合并了第一、二列，
      *      第二行则分别显示不同的两列（昵称，身份证号）
      */
-    @ExcelProperty(index = 0)
+    @ExcelProperty(value ={"姓名","昵称"},index = 0)
     private String name;
-    @ExcelProperty(index = 1)
+    @ExcelProperty(value ={"姓名","身份证号"},index = 1)
     private String identifyCard;
-    @ExcelProperty(index = 2)
+    @ExcelProperty(value ={"学历"},index = 2)
     private String educationBackgroup;
-    @ExcelProperty(index = 3)
+    @ExcelProperty(value ={"地址","住址"},index = 3)
     private String address;
-    @ExcelProperty(index = 4)
+    @ExcelProperty(value ={"联系","邮箱"},index = 4)
     private String email;
-    @ExcelProperty(index = 5,format = "yyyy-MM-dd HH:mm:ss")
+    @ExcelProperty(value ={"出生日期"},index = 5,format = "yyyy-MM-dd HH:mm:ss")
     private Date birthday;
+//    @ExcelProperty(value ={"姓名"},index = 0)
+//    private String name;
+//    @ExcelProperty(value ={"身份证号"},index = 1)
+//    private String identifyCard;
+//    @ExcelProperty(value ={"学历"},index = 2)
+//    private String educationBackgroup;
+//    @ExcelProperty(value ={"住址"},index = 3)
+//    private String address;
+//    @ExcelProperty(value ={"邮箱"},index = 4)
+//    private String email;
+//    @ExcelProperty(value ={"出生日期"},index = 5,format = "yyyy-MM-dd HH:mm:ss")
+//    private Date birthday;
 
     public String getName() {
         return name;
     }
 
-    public ExcelReaderRowModel setName(String name) {
+    public ExcelRowModel setName(String name) {
         this.name = name;
         return this;
     }
@@ -47,7 +59,7 @@ public class ExcelReaderRowModel extends BaseRowModel {
 
     }
 
-    public ExcelReaderRowModel setIdentifyCard(String identifyCard) {
+    public ExcelRowModel setIdentifyCard(String identifyCard) {
         this.identifyCard = identifyCard;
         return this;
     }
@@ -56,7 +68,7 @@ public class ExcelReaderRowModel extends BaseRowModel {
         return educationBackgroup;
     }
 
-    public ExcelReaderRowModel setEducationBackgroup(String educationBackgroup) {
+    public ExcelRowModel setEducationBackgroup(String educationBackgroup) {
         this.educationBackgroup = educationBackgroup;
         return this;
     }
@@ -65,7 +77,7 @@ public class ExcelReaderRowModel extends BaseRowModel {
         return address;
     }
 
-    public ExcelReaderRowModel setAddress(String address) {
+    public ExcelRowModel setAddress(String address) {
         this.address = address;
         return this;
     }
@@ -74,7 +86,7 @@ public class ExcelReaderRowModel extends BaseRowModel {
         return email;
     }
 
-    public ExcelReaderRowModel setEmail(String email) {
+    public ExcelRowModel setEmail(String email) {
         this.email = email;
         return this;
     }
@@ -83,7 +95,7 @@ public class ExcelReaderRowModel extends BaseRowModel {
         return birthday;
     }
 
-    public ExcelReaderRowModel setBirthday(Date birthday) {
+    public ExcelRowModel setBirthday(Date birthday) {
         this.birthday = birthday;
         return this;
     }
