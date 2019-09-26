@@ -23,11 +23,11 @@
     <jackson.verion>2.9.7</jackson.verion>
     <mysql.version>5.1.46</mysql.version>
   </properties>
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.0.5.RELEASE</version>
-  </parent>
+  <!--<parent>-->
+    <!--<groupId>org.springframework.boot</groupId>-->
+    <!--<artifactId>spring-boot-starter-parent</artifactId>-->
+    <!--<version>2.0.5.RELEASE</version>-->
+  <!--</parent>-->
   <!--<dependencyManagement>-->
     <dependencies>
 
@@ -86,12 +86,12 @@
       <version>${spring.boot.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-test</artifactId>
-        <version>${spring.boot.version}</version>
-        <scope>test</scope>
-      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>org.springframework.boot</groupId>-->
+        <!--<artifactId>spring-boot-starter-test</artifactId>-->
+        <!--<version>${spring.boot.version}</version>-->
+        <!--<scope>test</scope>-->
+      <!--</dependency>-->
       <!-- 7.XML解析 -->
       <dependency>
         <groupId>dom4j</groupId>
@@ -268,24 +268,24 @@
     <!--</plugins>-->
     <!--<pluginManagement>-->
       <!--<plugins>-->
-        <plugin>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-maven-plugin</artifactId>
-          <!--将引用的第三方本地jar一起打包-->
-          <configuration>
-            <executable>true</executable>
-            <includeSystemScope>true</includeSystemScope>
-          </configuration>
-          <executions>
-            <execution>
-              <goals>
-                <goal>
-                  repackage
-                </goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
+        <!--<plugin>-->
+          <!--<groupId>org.springframework.boot</groupId>-->
+          <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
+          <!--&lt;!&ndash;将引用的第三方本地jar一起打包&ndash;&gt;-->
+          <!--<configuration>-->
+            <!--<executable>true</executable>-->
+            <!--<includeSystemScope>true</includeSystemScope>-->
+          <!--</configuration>-->
+          <!--<executions>-->
+            <!--<execution>-->
+              <!--<goals>-->
+                <!--<goal>-->
+                  <!--repackage-->
+                <!--</goal>-->
+              <!--</goals>-->
+            <!--</execution>-->
+          <!--</executions>-->
+        <!--</plugin>-->
       </plugins>
     <!--</pluginManagement>-->
   </build>
