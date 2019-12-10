@@ -16,6 +16,32 @@ public class DateUtil {
     private static final String DatePatten1 = "yyyy-MM-dd HH:mm";
     private static final String DatePatten2 = "yyyy-MM-dd";
 
+    public static String timestampToDefaultFormat(Long timestamp){
+        if(timestamp==null){
+            return "";
+        }
+        //java 默认解析精确到毫秒的时间戳，因此10位（精确到秒）时需要*1000
+        if(String.valueOf(timestamp).length()==10){
+            return timestampToDateFormat(timestamp*1000L,default_DatePatten);
+        }
+        return timestampToDateFormat(timestamp,default_DatePatten);
+    }
+
+    public static String timestampToDateFormat(Long timestamp, String defaultFormat) {
+        if(timestamp==null){
+            return "";
+        }
+        return dateToFormat(new Date(timestamp),defaultFormat);
+    }
+
+    /**
+     * 获取当天时间
+     * @return
+     */
+    public static Date getCurrentDate(){
+        return Calendar.getInstance().getTime();
+    }
+
     /**
      * 获取指定格式的时间字符串
      *
@@ -186,6 +212,34 @@ public class DateUtil {
         calendar.setTime(date);
         calendar.add(Calendar.MINUTE, n);
         return calendar.getTime();
+    }
+
+    /**
+     * 获取指定某天开始时间
+     * @param date
+     * @return
+     */
+    public static Long getDayStartTimestamp(Date date){
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(date);
+        startCalendar.set(Calendar.HOUR_OF_DAY,0);
+        startCalendar.set(Calendar.MINUTE,0);
+        startCalendar.set(Calendar.SECOND,0);
+        return startCalendar.getTimeInMillis();
+    }
+
+    /**
+     * 获取指定某天的结束时间
+     * @param date
+     * @return
+     */
+    public static Long getDayEndTimestamp(Date date){
+        Calendar endCalendar = Calendar.getInstance();
+        endCalendar.setTime(date);
+        endCalendar.set(Calendar.HOUR_OF_DAY,23);
+        endCalendar.set(Calendar.MINUTE,59);
+        endCalendar.set(Calendar.SECOND,59);
+        return endCalendar.getTimeInMillis();
     }
 
     public static void main(String[] args) {
