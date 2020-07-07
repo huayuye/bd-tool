@@ -9,8 +9,8 @@ import lombok.Data;
  **/
 @Data
 public class SMBPropertis {
-    private String smbUsername = "comma";
-    private String smbPassword = "comma";
+    private String smbUsername = "bingdeng";
+    private String smbPassword = "bingdeng";
 
     //主要用于jcifs协议
     private String smbLogFilepath = "smb://10.60.178.251/share/log/";

@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * @Author: Fran
  * @Date: 2019/4/23
- * @Desc:
+ * @Desc: 此工具类基于 easyexcel 1.1.1
  **/
 public class ExcelUtil {
 
