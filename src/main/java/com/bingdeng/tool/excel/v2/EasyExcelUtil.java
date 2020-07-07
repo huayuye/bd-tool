@@ -19,7 +19,8 @@ import java.util.List;
  **/
 public class EasyExcelUtil {
     public static void write(OutputStream outputStream, String sheetName, Class clazz, List<?> datas){
-        EasyExcel.write(outputStream,clazz).registerWriteHandler(new ExcelUserCellHandler()).excelType(null).sheet(sheetName).doWrite(datas);
+//        EasyExcel.write(outputStream,clazz).registerWriteHandler(new ExcelUserCellHandler()).excelType(null).sheet(sheetName).doWrite(datas);
+        EasyExcel.write(outputStream,clazz).excelType(null).sheet(sheetName).doWrite(datas);
     }
 
 
