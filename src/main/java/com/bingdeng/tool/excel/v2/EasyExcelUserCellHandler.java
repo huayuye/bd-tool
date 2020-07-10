@@ -3,7 +3,6 @@ package com.bingdeng.tool.excel.v2;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.handler.CellWriteHandler;
-import com.alibaba.excel.write.handler.WriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import org.apache.poi.ss.usermodel.Cell;
@@ -16,7 +15,7 @@ import java.util.List;
  * @Date: 2020/7/7
  * @Desc:
  **/
-public class ExcelUserCellHandler implements CellWriteHandler {
+public class EasyExcelUserCellHandler implements CellWriteHandler {
     @Override
     public void beforeCellCreate(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Head head, Integer integer, Integer integer1, Boolean aBoolean) {
 
