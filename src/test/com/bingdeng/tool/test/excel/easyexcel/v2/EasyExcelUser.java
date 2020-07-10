@@ -1,4 +1,4 @@
-package com.bingdeng.tool.excel.v2;
+package com.bingdeng.tool.test.excel.easyexcel.v2;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
