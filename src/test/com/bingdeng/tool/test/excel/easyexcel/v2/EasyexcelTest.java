@@ -27,7 +27,7 @@ public class EasyexcelTest {
         EasyExcelUser easyExcelUser = null;
         Date date = DateUtil.getCurrentDate();
         for(int i=0; i<1000;i++){
-            easyExcelUser = new EasyExcelUser("test"+i,i+"2",date,BigDecimal.valueOf(i+1000000.86548));
+            easyExcelUser = new EasyExcelUser(i%3==0?"男":"女","test"+i,i+"2",date,BigDecimal.valueOf(i+1000000.86548));
             users.add(easyExcelUser);
             easyExcelUser=null;
         }
@@ -53,9 +53,24 @@ public class EasyexcelTest {
         }
     }
 
-//    public static void main(String[] args) {
+
+    public static void testExplicitConstraint(){
+        try {
+            List<EasyExcelUser> users = new ArrayList<>(15000);
+            EasyExcelUser easyExcelUser = new EasyExcelUser("江苏省","test","2",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
+            EasyExcelUser easyExcelUser2 = new EasyExcelUser("安徽省","test2","2",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
+            users.add(easyExcelUser);
+            users.add(easyExcelUser2);
+            EasyExcelUtil.writeWithCellStype(new FileOutputStream(new File("E:/ideaTestWorkSpace/easyexcelConstraint.xlsx")),new EasyExcelExplicitConstraintHandler(EasyExcelUser.class),"test",EasyExcelUser.class,users);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
 //        testReadMoreSheet();
-//    }
+        testExplicitConstraint();
+    }
 
 
 

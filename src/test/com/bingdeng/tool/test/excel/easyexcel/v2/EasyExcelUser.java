@@ -19,6 +19,10 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EasyExcelUser {
+    @ColumnWidth(10)
+    @ExcelProperty(value = "性别")
+    @EasyExcelExplicitConstraint(column = 5,levelTandem = 2,contentClass = {EasyExcelExplicitConstraintImpl.class})
+    private String gender;
     @ExcelProperty(value = "用户名")
     private String username;
     @ExcelProperty(value = "密码")
