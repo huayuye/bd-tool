@@ -46,7 +46,12 @@ public class EasyExcelUtil {
      * @param datas
      */
     public static void writeWithCellStype(OutputStream outputStream, WriteHandler writeHandler, String sheetName, Class clazz, List<?> datas){
-        EasyExcel.write(outputStream,clazz).registerWriteHandler(writeHandler).sheet(sheetName).doWrite(datas);
+        EasyExcel
+                .write(outputStream,clazz)
+                .registerWriteHandler(resetHeaderCellStyleStrategy())
+                .registerWriteHandler(writeHandler)
+                .sheet(sheetName)
+                .doWrite(datas);
     }
 
 
@@ -86,6 +91,32 @@ public class EasyExcelUtil {
             // 允许每一个sheet 对应不同的Head和Listener
             List<ReadSheet> readSheets= new ArrayList<>(sheetMaps.size());
             for(Map.Entry<Integer,Map<Class,ReadListener>> sheetEntry : sheetMaps.entrySet()){
+                Map.Entry<Class,ReadListener> headerEntry= sheetEntry.getValue().entrySet().iterator().next();
+                readSheets.add(EasyExcel.readSheet(sheetEntry.getKey()).head(headerEntry.getKey()).registerReadListener(headerEntry.getValue()).build());
+            }
+            // 这里注意 一定要把sheet1 sheet2,... 一起传进去，不然有个问题就是03版的excel 会读取多次，浪费性能
+            excelReader.read(readSheets);
+        } finally {
+            if (excelReader != null) {
+                // 这里千万别忘记关闭，读的时候会创建临时文件，到时磁盘会崩的
+                excelReader.finish();
+            }
+        }
+    }
+
+    /**
+     * 读取部分sheet
+     * @param inputStream
+     * @param sheetMaps [指定需要的sheet及每个sheet的header和Listener]
+     */
+    public static void readWithPartSheetWithName(InputStream inputStream, Map<String,Map<Class,ReadListener>> sheetMaps) {
+        //
+        ExcelReader excelReader = null;
+        try {
+            excelReader = EasyExcel.read(inputStream).build();
+            // 允许每一个sheet 对应不同的Head和Listener
+            List<ReadSheet> readSheets= new ArrayList<>(sheetMaps.size());
+            for(Map.Entry<String,Map<Class,ReadListener>> sheetEntry : sheetMaps.entrySet()){
                 Map.Entry<Class,ReadListener> headerEntry= sheetEntry.getValue().entrySet().iterator().next();
                 readSheets.add(EasyExcel.readSheet(sheetEntry.getKey()).head(headerEntry.getKey()).registerReadListener(headerEntry.getValue()).build());
             }

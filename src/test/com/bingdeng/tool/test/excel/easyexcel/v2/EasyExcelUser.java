@@ -21,7 +21,7 @@ import java.util.Date;
 public class EasyExcelUser {
     @ColumnWidth(10)
     @ExcelProperty(value = "性别")
-    @EasyExcelExplicitConstraint(column = 5,levelTandem = 2,contentClass = {EasyExcelExplicitConstraintImpl.class})
+    @EasyExcelExplicitConstraint(levelTandem = 3,contents = {"江苏省","安徽省"},contentClass = {EasyExcelExplicitConstraintImpl.class})
     private String gender;
     @ExcelProperty(value = "用户名")
     private String username;

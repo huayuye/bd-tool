@@ -47,7 +47,25 @@ public class EasyexcelTest {
             sheets.put(0,sheet1);
             sheets.put(1,sheet2);
 
-            EasyExcelUtil.readWithPartSheet(new FileInputStream(new File("E:/ideaTestWorkSpace/easyexcel.xlsx")),sheets);
+            EasyExcelUtil.readWithPartSheet(new FileInputStream(new File("/Users/bingdeng/Desktop/temp/easyexcelConstraint3.xlsx")),sheets);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void testReadMoreSheetWithName(){
+        try {
+            Map<String,Map<Class,ReadListener>> sheets = new HashMap<>();
+
+            Map<Class,ReadListener> sheet1 = new HashMap<>();
+            sheet1.put(EasyExcelUser.class,new EasyExcelUserListener(excelDao));
+
+            Map<Class,ReadListener> sheet2 = new HashMap<>();
+            sheet2.put(EasyExcelArticle.class,new EasyExcelArticleListener(excelDao));
+
+            sheets.put("test",sheet1);
+            sheets.put("test2",sheet2);
+
+            EasyExcelUtil.readWithPartSheetWithName(new FileInputStream(new File("/Users/bingdeng/Desktop/temp/easyexcelConstraint3.xlsx")),sheets);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -57,11 +75,11 @@ public class EasyexcelTest {
     public static void testExplicitConstraint(){
         try {
             List<EasyExcelUser> users = new ArrayList<>(15000);
-            EasyExcelUser easyExcelUser = new EasyExcelUser("江苏省","test","2",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
-            EasyExcelUser easyExcelUser2 = new EasyExcelUser("安徽省","test2","2",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
-            users.add(easyExcelUser);
-            users.add(easyExcelUser2);
-            EasyExcelUtil.writeWithCellStype(new FileOutputStream(new File("E:/ideaTestWorkSpace/easyexcelConstraint.xlsx")),new EasyExcelExplicitConstraintHandler(EasyExcelUser.class),"test",EasyExcelUser.class,users);
+//            EasyExcelUser easyExcelUser = new EasyExcelUser("请选择","请选择","请选择",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
+//            EasyExcelUser easyExcelUser2 = new EasyExcelUser("安徽省","test2","2",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
+//            users.add(easyExcelUser);
+//            users.add(easyExcelUser2);
+            EasyExcelUtil.writeWithCellStype(new FileOutputStream(new File("/Users/bingdeng/Desktop/temp/easyexcelConstraint4.xlsx")),new EasyExcelExplicitConstraintHandler(EasyExcelUser.class),"test",EasyExcelUser.class,null);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -69,6 +87,7 @@ public class EasyexcelTest {
 
     public static void main(String[] args) {
 //        testReadMoreSheet();
+//        testReadMoreSheetWithName();
         testExplicitConstraint();
     }
 

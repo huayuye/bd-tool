@@ -8,19 +8,20 @@ import java.lang.annotation.Target;
 /**
  * @Author: Fran
  * @Date: 2020/7/23
- * @Desc:
+ * @Desc: 此是否作为下拉框，支持多级，多级时，只需要定义在第一级且往后级数必须是相邻的
+ * 如三级联动：A 列为一级，那🎧必须为B,三级必须为C
  **/
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface EasyExcelExplicitConstraint {
     /**
-     * 下拉内容放于第几列
+     * 下拉内容放于第几列:默认为实体对象属性顺序，以0开始
      * @return
      */
-    int column() default 0;
+//    int column() default 0;
 
     /**
-     * 多级联动,默认1 无联动
+     * 多级联动数,默认1 无联动
      * @return
      */
     int levelTandem() default 1;
