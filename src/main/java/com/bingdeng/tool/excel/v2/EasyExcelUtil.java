@@ -2,15 +2,19 @@ package com.bingdeng.tool.excel.v2;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
+import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.alibaba.excel.write.handler.WriteHandler;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.style.WriteCellStyle;
 import com.alibaba.excel.write.metadata.style.WriteFont;
 import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -23,6 +27,37 @@ import java.util.Map;
  * @Desc:
  **/
 public class EasyExcelUtil {
+
+
+    /**
+     * 按照模板，写入excel文件，数据在内存中操作，只适用于数据量不会太大的
+     * @param outputStream 输出目标流
+     * @param templatePath 模板文件流
+     * @param fixedData 固定列数据
+     * @param datas 列表数据
+     * @desc 适用于少量数据
+     */
+    public static void writeWithTemplate(OutputStream outputStream, InputStream templatePath, Map<String,Object> fixedData, List<?> datas){
+        ExcelWriter excelWriter = EasyExcel
+                .write(outputStream)
+//                .withTemplate(ResourceUtils.getFile("classpath:templates/template.xlsx"))
+                .withTemplate(templatePath)
+                .build();
+        WriteSheet writeSheet = EasyExcel.writerSheet().build();
+        //FillConfig设置为true,即内存中处理，适用于少量数据
+        FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+        excelWriter.fill(datas,fillConfig,writeSheet);
+        excelWriter.fill(fixedData,writeSheet);
+        excelWriter.finish();
+        try {
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     /**
      * 写入excel文件
      * @param outputStream
