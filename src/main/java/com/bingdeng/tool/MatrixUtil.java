@@ -7,6 +7,7 @@ import com.google.zxing.common.HybridBinarizer;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,6 +27,18 @@ public class MatrixUtil {
      * 禁止生成实例，生成实例也没有意义。
      */
     private MatrixUtil() {
+    }
+
+
+    public static byte[] createQRCode(String text, Integer width,
+                                      Integer height,String format) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        BufferedImage image = toBufferedImage(toQRCodeMatrix(text, width, height));
+        if (!ImageIO.write(image, "png", outputStream)) {
+            throw new IOException("Could not write an image of format "
+                    + format);
+        }
+        return outputStream.toByteArray();
     }
 
     /**
@@ -57,7 +70,7 @@ public class MatrixUtil {
         }
         // 生成二维码
         // File outputFile = new File("d:"+File.separator+"new.gif");
-        // MatrixUtil.writeToFile(bitMatrix, format, outputFile);
+//         MatrixUtil.writeToFile(bitMatrix, format, outputFile);
         return bitMatrix;
     }
 
