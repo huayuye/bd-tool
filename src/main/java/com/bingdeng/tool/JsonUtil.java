@@ -25,12 +25,13 @@ public class JsonUtil {
         else if (objJson instanceof JSONObject) {
             JSONObject jsonObject = (JSONObject) objJson;
             /*---------------------------------------------此段属于自己的业务逻辑1，视具体情况而定-----------------------------*/
-            //每个对象中的id的值可以在这里获取（这是为了将这里的id赋值给pid）：
+            //每个对象中的id的值可以在这里获取（这是为了将这里的id赋值给它的子类的pid）：
 //            Long id = 0L;
 //            Iterator itTepm = jsonObject.keys();
 //            while(itTepm.hasNext()){
-//                if( ("id").equals(itTepm.next().toString())){
-//                    id = jsonObject.getInt("id");
+//                if( ("code").equals(itTepm.next().toString())){
+//                        如果code（codeObject）存在更新，否则插入
+//                    id = codeObject.id;
 //                }
 //            }
             // 这里独立执行一次while(it.hasNext()){}即可获取到，不能在下面的逻辑获取，否则会有属性顺序的隐患，导致获取到的所有id一样
