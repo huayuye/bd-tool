@@ -3,6 +3,8 @@ package com.bingdeng.tool.test.excel.easyexcel.v2;
 import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
+import com.bingdeng.tool.StringUtil;
+import org.apache.poi.hssf.usermodel.DVConstraint;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -55,7 +57,6 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-
         //结合注解-多级联动设置
         Sheet sheet = writeSheetHolder.getSheet();
         DataValidationHelper helper = sheet.getDataValidationHelper();
@@ -65,37 +66,68 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
             //一级内容设置
             EasyExcelExplicitConstraint dropDownList = fields[columnIndex].getAnnotation(EasyExcelExplicitConstraint.class);
             if(dropDownList==null)continue;
-//            hashmap.put(dropDownList.column(),resolveAnnatotion(dropDownList));
-             CellRangeAddressList cellRangeAddressList = new CellRangeAddressList();
-             //指定起始行,起始列
-             CellRangeAddress rangeAddress = new CellRangeAddress(dropDownList.startRow(),dropDownList.maxRows(),columnIndex,columnIndex);
-             cellRangeAddressList.addCellRangeAddress(rangeAddress);
-             //添加对应的数据
-             String[] leveTop = this.levelFirstDatas;
-             if(leveTop==null || leveTop.length<0){
-                 leveTop = resolveContents(dropDownList);
-             }
-             DataValidationConstraint constraint = helper.createExplicitListConstraint(leveTop);
-             //在指定的行列加入数据列表
-             DataValidation dataValidation =helper.createValidation(constraint,cellRangeAddressList);
-             //添加数据的校验
-             //允许为空
-             dataValidation.setEmptyCellAllowed(false);
-             dataValidation.createErrorBox("输入有误", "请选择下拉内容");
-             if (dataValidation instanceof XSSFDataValidation) {
-                 dataValidation.setSuppressDropDownArrow(true);
-                 dataValidation.setShowErrorBox(true);
-             } else {
-                 dataValidation.setSuppressDropDownArrow(false);
-             }
-             sheet.addValidationData(dataValidation);
-             //是否有联动
-            if(dropDownList.levelTandem()>1){
-               Map<String,List<String>> leveDatas = this.levelDatas;
-                if(leveDatas==null || leveDatas.isEmpty()){
-                    leveDatas = resolveLevelContents(dropDownList);
-                }
-                levelTandemSheet(writeWorkbookHolder.getWorkbook(), sheet, Arrays.asList(leveTop) ,leveDatas,columnIndex+1,dropDownList.levelTandem(),dropDownList.maxRows());
+            if(dropDownList.hasSelect()){
+                handleSelect(writeWorkbookHolder, sheet, helper, columnIndex, dropDownList);
+            }
+            handleDateFormat(dropDownList.dateFormat(),dropDownList.startRow(), dropDownList.maxRows(), columnIndex, columnIndex,sheet, helper);
+        }
+    }
+
+    private void handleDateFormat(String dateFormat,Integer startRow, Integer maxRows, Integer startColumn, Integer endColumn, Sheet sheet, DataValidationHelper helper) {
+        if(dateFormat==null || dateFormat.isEmpty()){return;}
+        DataValidationConstraint dvConstraint = helper.createDateConstraint(DataValidationConstraint.OperatorType.BETWEEN, "Date(1900,1,1)",
+                "Date(5099,1,1)", dateFormat);
+        CellRangeAddressList cellRangeAddressList = new CellRangeAddressList();
+        CellRangeAddress rangeAddress = new CellRangeAddress(startRow, maxRows, startColumn, endColumn);
+        cellRangeAddressList.addCellRangeAddress(rangeAddress);
+        DataValidation dataValidation = helper.createValidation(dvConstraint,cellRangeAddressList);
+//        dataValidation.setSuppressDropDownArrow(false);
+        dataValidation.setEmptyCellAllowed(true);
+//        dataValidation.createPromptBox("输入提示", "请填写日期格式");
+        // 设置输入错误提示信息
+        dataValidation.createErrorBox("日期格式错误","请输入格式为 "+dateFormat+" 的日期!");
+//        dataValidation.setShowPromptBox(true);
+        if (dataValidation instanceof XSSFDataValidation) {
+            dataValidation.setSuppressDropDownArrow(true);
+            dataValidation.setShowErrorBox(true);
+        } else {
+            dataValidation.setSuppressDropDownArrow(false);
+        }
+        sheet.addValidationData(dataValidation);
+    }
+
+    private void handleSelect(WriteWorkbookHolder writeWorkbookHolder, Sheet sheet, DataValidationHelper helper, int columnIndex, EasyExcelExplicitConstraint dropDownList) {
+        //            hashmap.put(dropDownList.column(),resolveAnnatotion(dropDownList));
+        CellRangeAddressList cellRangeAddressList = new CellRangeAddressList();
+        //指定起始行,起始列
+        CellRangeAddress rangeAddress = new CellRangeAddress(dropDownList.startRow(), dropDownList.maxRows(), columnIndex, columnIndex);
+        cellRangeAddressList.addCellRangeAddress(rangeAddress);
+        //添加对应的数据
+        String[] leveTop = this.levelFirstDatas;
+        if(leveTop==null || leveTop.length<0){
+            leveTop = resolveContents(dropDownList);
+        }
+        DataValidationConstraint constraint = helper.createExplicitListConstraint(leveTop);
+        //在指定的行列加入数据列表
+        DataValidation dataValidation = helper.createValidation(constraint,cellRangeAddressList);
+        //添加数据的校验
+        //允许为空
+        dataValidation.setEmptyCellAllowed(true);
+        dataValidation.createErrorBox("输入有误", "请选择下拉内容");
+        if (dataValidation instanceof XSSFDataValidation) {
+            dataValidation.setSuppressDropDownArrow(true);
+            dataValidation.setShowErrorBox(true);
+        } else {
+            dataValidation.setSuppressDropDownArrow(false);
+        }
+        sheet.addValidationData(dataValidation);
+        //是否有联动
+        if(dropDownList.levelTandem()>1){
+           Map<String,List<String>> leveDatas = this.levelDatas;
+            if(leveDatas==null || leveDatas.isEmpty()){
+                leveDatas = resolveLevelContents(dropDownList);
+            }
+            levelTandemSheet(writeWorkbookHolder.getWorkbook(), sheet, Arrays.asList(leveTop) ,leveDatas, columnIndex +1, dropDownList.levelTandem(), dropDownList.maxRows());
 //                switch (dropDownList.levelTandem()){
 //                    case 2:
 //                        TwoLevelTandemSheet(writeWorkbookHolder, sheet, Arrays.asList(leveTop) ,leveDatas,columnIndex+1,dropDownList.levelTandem(),dropDownList.maxRows());
@@ -104,7 +136,6 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
 //                        ThreeLevelTandemSheet(writeWorkbookHolder, sheet,Arrays.asList(leveTop),leveDatas,columnIndex+1,dropDownList.levelTandem(),dropDownList.maxRows());
 //                        break;
 //                }
-            }
         }
     }
 
@@ -244,7 +275,7 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
         // 数据有效性对象
         // 绑定
         DataValidation dataValidations =  dvHelper.createValidation(dvConstraint, regions);
-        dataValidations.setEmptyCellAllowed(false);
+        dataValidations.setEmptyCellAllowed(true);
         // 设置输入信息提示信息
         dataValidations.createErrorBox("输入有误", "请选择下拉内容");
         if (dataValidations instanceof XSSFDataValidation) {

@@ -75,11 +75,12 @@ public class EasyexcelTest {
     public static void testExplicitConstraint(){
         try {
             List<EasyExcelUser> users = new ArrayList<>(15000);
-//            EasyExcelUser easyExcelUser = new EasyExcelUser("请选择","请选择","请选择",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
-//            EasyExcelUser easyExcelUser2 = new EasyExcelUser("安徽省","test2","2",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
-//            users.add(easyExcelUser);
-//            users.add(easyExcelUser2);
-            EasyExcelUtil.writeWithCellStype(new FileOutputStream(new File("/Users/bingdeng/Desktop/temp/easyexcelConstraint4.xlsx")),new EasyExcelExplicitConstraintHandler(EasyExcelUser.class),"test",EasyExcelUser.class,null);
+            EasyExcelUser easyExcelUser = new EasyExcelUser("请选择","请选择","请选择",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
+            easyExcelUser.setBirthday(new Date());
+            EasyExcelUser easyExcelUser2 = new EasyExcelUser("安徽省","test2","2",DateUtil.getCurrentDate(),BigDecimal.valueOf(1000000.86548));
+            users.add(easyExcelUser);
+            users.add(easyExcelUser2);
+            EasyExcelUtil.writeWithCellStype(new FileOutputStream(new File("C:\\htmlpdf\\easyexcelConstraint4.xlsx")),new EasyExcelExplicitConstraintHandler(EasyExcelUser.class),"test",EasyExcelUser.class,users);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

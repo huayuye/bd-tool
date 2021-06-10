@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * @Author: Fran
  * @Date: 2020/7/23
  * @Desc: 此是否作为下拉框，支持多级，多级时，只需要定义在第一级且往后级数必须是相邻的
- * 如三级联动：A 列为一级，那🎧必须为B,三级必须为C
+ * 如三级联动：A 列为一级，那二级必须为B,三级必须为C
  **/
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
@@ -49,4 +49,11 @@ public @interface EasyExcelExplicitConstraint {
      * @return
      */
     Class[] contentClass() default{};
+    /**
+     * 支持动态查询
+     * @return
+     */
+    String dateFormat() default "";
+
+    boolean hasSelect() default false;
 }
