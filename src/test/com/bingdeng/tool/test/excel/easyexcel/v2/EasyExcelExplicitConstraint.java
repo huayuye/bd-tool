@@ -14,17 +14,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface EasyExcelExplicitConstraint {
-    /**
-     * 下拉内容放于第几列:默认为实体对象属性顺序，以0开始
-     * @return
-     */
-//    int column() default 0;
-
-    /**
-     * 多级联动数,默认1 无联动
-     * @return
-     */
-    int levelTandem() default 1;
 
     /**
      * 下拉内容始于第几行有效
@@ -39,21 +28,30 @@ public @interface EasyExcelExplicitConstraint {
     int maxRows() default 10000;
 
     /**
-     * 下拉内容
-     * @return
-     */
-    String[] contents() default{};
-
-    /**
-     * 支持动态查询
-     * @return
-     */
-    Class[] contentClass() default{};
-    /**
-     * 支持动态查询
+     * 日期格式
      * @return
      */
     String dateFormat() default "";
 
-    boolean hasSelect() default false;
+    /**
+     * 当有下拉框选择时仅用于一级下拉框内容
+     * @return
+     */
+    String[] contents() default{};
+
+    /***
+     * 所需要用的当前文档中的名称管理器的所在sheet的名称
+     * 比如:
+     * 如果多列相应使用的下拉框
+     * （1）内容均相同,那这里一定要是相同名称
+     * （2）内容均不相同,那这里一定要是不相同名称
+     * @return
+     */
+    String optionDataSheet() default "";
+    /**
+     * 多级联动数,默认0,无下拉选择框,1-一级,2-二级联动,以此类推
+     * @return
+     */
+    int levelTandem() default 0;
+
 }

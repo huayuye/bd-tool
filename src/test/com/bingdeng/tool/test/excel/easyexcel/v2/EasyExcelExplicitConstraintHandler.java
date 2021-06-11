@@ -3,8 +3,6 @@ package com.bingdeng.tool.test.excel.easyexcel.v2;
 import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
-import com.bingdeng.tool.StringUtil;
-import org.apache.poi.hssf.usermodel.DVConstraint;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -26,28 +24,44 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
     private Class clazz;
     /**
      * 第一级数据
+     * key为字段名
      */
-    private String[] levelFirstDatas;
+    private Map<String,List<String>> levelFirstDatas;
     /**所有为父级的数据分别所对应的子集
+     * 外层key为字段名
+     * 里层：
      * key：父集
      * value: 此父级对应的子集
      */
-    private Map<String,List<String>> levelDatas;
+    private Map<String,Map<String,List<String>>> levelSecondDatas;
+    /**所有为父级的数据分别所对应的子集
+     * 外层key为字段名
+     * 里层：
+     * key：父集
+     * value: 此父级对应的子集
+     */
+    private Map<String,Map<String,List<String>>> levelTreeDatas;
     public EasyExcelExplicitConstraintHandler() {
     }
     public EasyExcelExplicitConstraintHandler(Class clazz) {
         this.clazz=clazz;
     }
 
-    public EasyExcelExplicitConstraintHandler(Class clazz,String[] levelFirstDatas) {
+    public EasyExcelExplicitConstraintHandler(Class clazz,Map<String,List<String>> levelFirstDatas) {
         this.clazz=clazz;
         this.levelFirstDatas=levelFirstDatas;
     }
 
-    public EasyExcelExplicitConstraintHandler(Class clazz,String[] levelFirstDatas,Map<String,List<String>> levelDatas) {
+    public EasyExcelExplicitConstraintHandler(Class clazz,Map<String,List<String>> levelFirstDatas,Map<String,Map<String,List<String>>> levelSecondDatas) {
         this.clazz=clazz;
         this.levelFirstDatas=levelFirstDatas;
-        this.levelDatas=levelDatas;
+        this.levelSecondDatas=levelSecondDatas;
+    }
+    public EasyExcelExplicitConstraintHandler(Class clazz,Map<String,List<String>> levelFirstDatas,Map<String,Map<String,List<String>>> levelSecondDatas,Map<String,Map<String,List<String>>> levelTreeDatas) {
+        this.clazz=clazz;
+        this.levelFirstDatas=levelFirstDatas;
+        this.levelSecondDatas=levelSecondDatas;
+        this.levelTreeDatas=levelTreeDatas;
     }
 
     @Override
@@ -64,10 +78,11 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
         if(fields==null && fields.length<=0){return;}
         for(int columnIndex=0;columnIndex<fields.length;columnIndex++){
             //一级内容设置
-            EasyExcelExplicitConstraint dropDownList = fields[columnIndex].getAnnotation(EasyExcelExplicitConstraint.class);
+            Field field = fields[columnIndex];
+            EasyExcelExplicitConstraint dropDownList = field.getAnnotation(EasyExcelExplicitConstraint.class);
             if(dropDownList==null)continue;
-            if(dropDownList.hasSelect()){
-                handleSelect(writeWorkbookHolder, sheet, helper, columnIndex, dropDownList);
+            if(dropDownList.levelTandem()>0){
+                handleSelect(writeWorkbookHolder, sheet, helper, columnIndex,field.getName(),dropDownList);
             }
             handleDateFormat(dropDownList.dateFormat(),dropDownList.startRow(), dropDownList.maxRows(), columnIndex, columnIndex,sheet, helper);
         }
@@ -96,16 +111,27 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
         sheet.addValidationData(dataValidation);
     }
 
-    private void handleSelect(WriteWorkbookHolder writeWorkbookHolder, Sheet sheet, DataValidationHelper helper, int columnIndex, EasyExcelExplicitConstraint dropDownList) {
+    private void handleSelect(WriteWorkbookHolder writeWorkbookHolder, Sheet sheet, DataValidationHelper helper, int columnIndex,String fieldName, EasyExcelExplicitConstraint dropDownList) {
         //            hashmap.put(dropDownList.column(),resolveAnnatotion(dropDownList));
         CellRangeAddressList cellRangeAddressList = new CellRangeAddressList();
         //指定起始行,起始列
         CellRangeAddress rangeAddress = new CellRangeAddress(dropDownList.startRow(), dropDownList.maxRows(), columnIndex, columnIndex);
         cellRangeAddressList.addCellRangeAddress(rangeAddress);
         //添加对应的数据
-        String[] leveTop = this.levelFirstDatas;
+        String[] leveTop = null;
+        //优先取构造函数的
+        if(this.levelFirstDatas!=null && !this.levelFirstDatas.isEmpty()){
+            List<String> leveTopList = this.levelFirstDatas.get(fieldName);
+            if(leveTopList!=null && !leveTopList.isEmpty()){
+                leveTop = this.levelFirstDatas.get(fieldName).toArray(new String[]{});
+            }
+        }
         if(leveTop==null || leveTop.length<0){
             leveTop = resolveContents(dropDownList);
+        }
+        if(leveTop==null || leveTop.length<0){
+            leveTop = new String[]{};
+            //可以直接报错
         }
         DataValidationConstraint constraint = helper.createExplicitListConstraint(leveTop);
         //在指定的行列加入数据列表
@@ -123,11 +149,23 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
         sheet.addValidationData(dataValidation);
         //是否有联动
         if(dropDownList.levelTandem()>1){
-           Map<String,List<String>> leveDatas = this.levelDatas;
-            if(leveDatas==null || leveDatas.isEmpty()){
-                leveDatas = resolveLevelContents(dropDownList);
+            Map<String,List<String>> leveDatas = null;
+            if(this.levelSecondDatas!=null && !this.levelSecondDatas.isEmpty()){
+                leveDatas = this.levelSecondDatas.get(fieldName);
             }
-            levelTandemSheet(writeWorkbookHolder.getWorkbook(), sheet, Arrays.asList(leveTop) ,leveDatas, columnIndex +1, dropDownList.levelTandem(), dropDownList.maxRows());
+            if(leveDatas==null || leveDatas.isEmpty()){
+                leveDatas = Collections.EMPTY_MAP;
+                //可以直接报错
+            }
+            Map<String,List<String>> leveThreeDatas = null;
+            if(this.levelTreeDatas!=null && !this.levelTreeDatas.isEmpty()){
+                leveThreeDatas = this.levelTreeDatas.get(fieldName);
+            }
+            if(leveThreeDatas==null || leveThreeDatas.isEmpty()){
+                leveThreeDatas = Collections.EMPTY_MAP;
+                //可以直接报错
+            }
+            levelTandemSheet(writeWorkbookHolder.getWorkbook(), sheet,dropDownList.optionDataSheet(), Arrays.asList(leveTop) ,leveDatas,leveThreeDatas, columnIndex +1, dropDownList.levelTandem(), dropDownList.maxRows());
 //                switch (dropDownList.levelTandem()){
 //                    case 2:
 //                        TwoLevelTandemSheet(writeWorkbookHolder, sheet, Arrays.asList(leveTop) ,leveDatas,columnIndex+1,dropDownList.levelTandem(),dropDownList.maxRows());
@@ -147,42 +185,69 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
      * @param levelTandem
      * @param maxEffectiveRows
      */
-    private void levelTandemSheet(Workbook workbook, Sheet currentSheet,List<String> levelTopData,Map<String,List<String>> levelDatas, int firstLevelTandemColumn, int levelTandem, int maxEffectiveRows) {
-        setHiddenSheetData(currentSheet, levelTopData, levelDatas, firstLevelTandemColumn, levelTandem, maxEffectiveRows, workbook);
+    private void levelTandemSheet(Workbook workbook, Sheet currentSheet,String selectDataSheetName,List<String> levelTopData,Map<String,List<String>> levelDatas,Map<String,List<String>> leveThreeDatas, int firstLevelTandemColumn, int levelTandem, int maxEffectiveRows) {
+        setHiddenSheetData(currentSheet,selectDataSheetName, levelTopData, levelDatas,leveThreeDatas, firstLevelTandemColumn, levelTandem, maxEffectiveRows, workbook);
     }
 
-    private void setHiddenSheetData(Sheet sheet, List<String> levelTopData, Map<String, List<String>> levelDatas, int firstLevelTandemColumn, int levelTandem, int maxEffectiveRows, Workbook workbook) {
-        Sheet hideSheet = workbook.createSheet("levelHiddenAreaSheet");
-        //隐藏sheet
-        workbook.setSheetHidden(workbook.getSheetIndex(hideSheet),true);
-        int rowId = 0;
-        // 设置第一行，存一级的信息
-        Row levelOneRow = hideSheet.createRow(rowId++);
-        levelOneRow.createCell(0).setCellValue("一级列表");
-        for (int i = 0; i < levelTopData.size(); i++) {
-            Cell levelOneCell = levelOneRow.createCell(i + 1);
-            levelOneCell.setCellValue(levelTopData.get(i));
-        }
-        // 将具体的数据写入到每一行中，行开头为父级区域，后面是子区域。
-        List<String> keys = new ArrayList<String>(levelDatas.keySet());
-        for (int i = 0; i < keys.size(); i++) {
-            String key = keys.get(i);
-            List<String> sonLevels = levelDatas.get(key);
-            Row row = hideSheet.createRow(rowId++);
-            row.createCell(0).setCellValue(key);
-            for (int j = 0; j < sonLevels.size(); j++) {
-                Cell cell = row.createCell(j + 1);
-                cell.setCellValue(sonLevels.get(j));
+    private void setHiddenSheetData(Sheet sheet,String selectDataSheetName, List<String> levelTopData, Map<String, List<String>> levelDatas, Map<String, List<String>> leveThreeDatas, int firstLevelTandemColumn, int levelTandem, int maxEffectiveRows, Workbook workbook) {
+        String createSheetName = "levelHiddenAreaSheet"+selectDataSheetName;
+        Sheet hideSheet = workbook.getSheet(createSheetName);
+        if(hideSheet==null){
+            hideSheet = workbook.createSheet(createSheetName);
+            //隐藏sheet
+//           workbook.setSheetHidden(workbook.getSheetIndex(hideSheet),true);
+            int rowId = 0;
+            // 设置第一行，存一级的信息
+            Row levelOneRow = hideSheet.createRow(rowId++);
+            levelOneRow.createCell(0).setCellValue("一级列表");
+            for (int i = 0; i < levelTopData.size(); i++) {
+                Cell levelOneCell = levelOneRow.createCell(i + 1);
+                levelOneCell.setCellValue(levelTopData.get(i));
             }
-            // 添加名称管理器
-            String range = getRange(1, rowId, sonLevels.size());
-            Name name = workbook.createName();
-            //key不可重复
-            name.setNameName(key);
-            String formula = hideSheet.getSheetName()+"!" + range;
-            name.setRefersToFormula(formula);
-        }
+            // 将具体的数据写入到每一行中，行开头为父级区域，后面是子区域。
+            if(levelDatas!=null && !levelDatas.isEmpty()){
+                List<String> keys = new ArrayList<String>(levelDatas.keySet());
+                for (int i = 0; i < keys.size(); i++) {
+                    String key = keys.get(i);
+                    List<String> sonLevels = levelDatas.get(key);
+                    Row row = hideSheet.createRow(rowId++);
+                    row.createCell(0).setCellValue(key);
+                    for (int j = 0; j < sonLevels.size(); j++) {
+                        Cell cell = row.createCell(j + 1);
+                        cell.setCellValue(sonLevels.get(j));
+                    }
+                    // 添加名称管理器
+                    String range = getRange(1, rowId, sonLevels.size());
+                    Name name = workbook.createName();
+                    //key不可重复
+                    name.setNameName(key);
+                    String formula = hideSheet.getSheetName()+"!" + range;
+                    name.setRefersToFormula(formula);
+                }
+            }
+            // 将具体的数据写入到每一行中，行开头为父级区域，后面是子区域。
+            if(leveThreeDatas!=null && !leveThreeDatas.isEmpty()){
+                List<String> threeKeys = new ArrayList<String>(leveThreeDatas.keySet());
+                for (int i = 0; i < threeKeys.size(); i++) {
+                    String key = threeKeys.get(i);
+                    List<String> sonLevels = leveThreeDatas.get(key);
+                    Row row = hideSheet.createRow(rowId++);
+                    row.createCell(0).setCellValue(key);
+                    for (int j = 0; j < sonLevels.size(); j++) {
+                        Cell cell = row.createCell(j + 1);
+                        cell.setCellValue(sonLevels.get(j));
+                    }
+                    // 添加名称管理器
+                    String range = getRange(1, rowId, sonLevels.size());
+                    Name name = workbook.createName();
+                    //key不可重复
+                    name.setNameName(key);
+                    String formula = hideSheet.getSheetName()+"!" + range;
+                    name.setRefersToFormula(formula);
+                }
+            }
 
+        }
         //对前n行设置有效性
         for (int i = 2; i < maxEffectiveRows; i++) {
             //二级 i行 A+1 列 由 i行 A 列 触发 即： 后一列由前一列触发
@@ -197,42 +262,8 @@ public class EasyExcelExplicitConstraintHandler implements SheetWriteHandler {
 
     private String[] resolveContents(EasyExcelExplicitConstraint dropDownList) {
         if(dropDownList==null)return null;
-        if(dropDownList.contents()!=null && dropDownList.contents().length>0){
-            return dropDownList.contents();
-        }
-             Class<? extends IEasyExcelExplicitConstraint>[] clazz1 =  dropDownList.contentClass();
-        if(clazz1!=null && clazz1.length>0){
-            try {
-              return   clazz1[0].newInstance().contents();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
+        return dropDownList.contents();
     }
-
-    private Map<String,List<String>> resolveLevelContents(EasyExcelExplicitConstraint dropDownList) {
-        if(dropDownList==null)return null;
-        Class<? extends IEasyExcelExplicitConstraint>[] clazz1 =  dropDownList.contentClass();
-        if(clazz1!=null && clazz1.length>0){
-            try {
-              return   clazz1[0].newInstance().levelContents();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-
-
-
-
-
     /**
      * 设置有效性
      * @param offset 主影响单元格所在列，即此单元格由哪个单元格影响联动
