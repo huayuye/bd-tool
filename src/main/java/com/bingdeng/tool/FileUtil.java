@@ -12,9 +12,7 @@ import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -215,38 +213,181 @@ public class FileUtil {
         }
         return -1;
     }
+    /**
+     * @param fileUrls        要压缩的文件路径
+     * @param outputStream 输出流
+     */
+    public static void zipFiles(Set<String> fileUrls, OutputStream outputStream) {
+        Map<String,InputStream> inputStreams = new HashMap<>();
+        InputStream fileInputStream = null;
+        for(String fileUrl : fileUrls){
+            try {
+                //获取要压缩的图片流:这里可以根据不同服务器的获取方式去获取图片
+                // 比如网络图片。可以使用URL.openConnection();我这里是直接读取本地的
+                fileInputStream=new FileInputStream(fileUrl);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                continue;
+            }
+            //必须包含文件名后缀
+            inputStreams.put(fileUrl.substring(fileUrl.lastIndexOf("/") + 1),fileInputStream);
+        }
+        zipFilesByStreams(inputStreams,outputStream);
+    }    /**
+     * @param files        要压缩的文件
+     * @param outputStream 输出流
+     */
+    public static void zipFiles(List<File> files, OutputStream outputStream) {
+        Map<String,InputStream> inputStreams = new HashMap<>();
+        InputStream fileInputStream = null;
+        for(File file : files){
+            try {
+                fileInputStream=new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                continue;
+            }
+            inputStreams.put(file.getName(),fileInputStream);
+        }
+        zipFilesByStreams(inputStreams,outputStream);
+    }
+    /**
+     * @param inputStreams        要压缩的文件流 map<FileName,InputStream>
+     * @param outputStream 输出流
+     */
+    public static void zipFilesByStreams(Map<String,InputStream> inputStreams, OutputStream outputStream) {
+        if(inputStreams==null || inputStreams.isEmpty()){return;}
+        Map<String,byte[]> fileMap = new HashMap<>();
+        String originName = null;
+        try {
+            byte[] tempBuff = null;
+            InputStream fileInputStream = null;
+            BufferedInputStream bufferedInputStream = null;
+            ByteArrayOutputStream byteArrayOutputStream = null;
+            int len = -1;
+            for (Map.Entry<String, InputStream> file : inputStreams.entrySet()) {
+                byteArrayOutputStream = new ByteArrayOutputStream();
+                originName = file.getKey();
+                log.info("zipFilesByStreams,zipFile:[{}]",originName);
+                fileInputStream = file.getValue();
+                bufferedInputStream = new BufferedInputStream(fileInputStream);
+                len = -1;
+                tempBuff = new byte[1024];
+                while ((len = bufferedInputStream.read(tempBuff)) != -1) {
+                    byteArrayOutputStream.write(tempBuff,0,tempBuff.length);
+                }
+                fileMap.put(originName,byteArrayOutputStream.toByteArray());
+                log.info("zipFilesByStreams,originName[{}] zip success:",originName);
+                try {
+                    if(bufferedInputStream!=null){
+                        bufferedInputStream.close();
+                    }
+                }catch (Exception e){
+                    log.error("bufferedInputStream io close Fail：{}",e.toString());
+                }
+                try {
+                    if(fileInputStream!=null){
+                        fileInputStream.close();
+                    }
+                }catch (Exception e){
+                    log.error("fileInputStream io close Fail：{}",e.toString());
+                }
+                try {
+                    if(byteArrayOutputStream!=null){
+                        byteArrayOutputStream.close();
+                    }
+                }catch (Exception e){
+                    log.error("byteArrayOutputStream io close Fail：{}",e.toString());
+                }
+            }
+        }catch (Exception e){
+            log.error("zipFilesByStreams,originName[{}] zip fail:[{}]",originName,e.toString());
+        }
+        zipFiles(fileMap,outputStream);
+        log.info("zipFilesByStreams,zipFile success...");
+    }
 
     /**
-     * @param imgs        要压缩的文件的路径列表
-     * @param destZipPath 临时保存压缩的文件的路径
+     * @param inputStreams        要压缩的文件流字节数组  map<FileName,byte[]>
+     * @param outputStream 输出流
      */
-    public void zipFile(List<String> imgs, String destZipPath) {
-        File zipFile = new File(destZipPath);
+    public static void zipFiles(Map<String,byte[]> inputStreams, OutputStream outputStream) {
+        if(inputStreams==null || inputStreams.isEmpty()){return;}
+        ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
+        String originName = null;
         try {
-            ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
             byte[] tempBuff = null;
-            FileInputStream fileInputStream = null;
-            for (String img : imgs) {
-                //获取要压缩的图片流:这里可以根据不同服务器的获取方式去获取图片，比如网络图片。可以使用URL.openConnection();我这里是直接读取本地的
-                fileInputStream = new FileInputStream(img);
-                int len = -1;
-                tempBuff = new byte[2048];
+            for (Map.Entry<String, byte[]> file : inputStreams.entrySet()) {
+                originName = file.getKey();
+                log.info("zipFiles:[{}]",originName);
+                tempBuff = file.getValue();
                 //分别设置压缩包中每一文件的文件名（必须含文件后缀）
-                zipOutputStream.putNextEntry(new ZipEntry(img.substring(img.lastIndexOf("/") + 1)));
+                zipOutputStream.putNextEntry(new ZipEntry(originName));
                 //将图片添加到压缩包中
-                while ((len = fileInputStream.read(tempBuff)) != -1) {
-                    zipOutputStream.write(tempBuff);
+                zipOutputStream.write(tempBuff,0,tempBuff.length);
+                log.info("originName[{}] zip success:",originName);
+                try {
+                    zipOutputStream.closeEntry();
+                }catch (Exception e){
+                    log.error("zipOutputStream closeEntry Fail：{}",e.toString());
                 }
-                zipOutputStream.closeEntry();
-                fileInputStream.close();
             }
-            zipOutputStream.close();
-            //删除压缩包
-            zipFile.delete();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        }catch (Exception e){
+            log.info("originName[{}] zip fail:[{}]",originName,e.toString());
+        }finally {
+            if(zipOutputStream!=null){
+                try {
+                    zipOutputStream.flush();
+                } catch (IOException e) {
+                    log.error("zipOutputStream Io flush Fail：{}",e.toString());
+                }
+                try {
+                    zipOutputStream.close();
+                } catch (IOException e) {
+                    log.error("zipOutputStream Io Close Fail：{}",e.toString());
+                }
+            }
+            if(outputStream!=null){
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    log.error("outputStream Io Close Fail：{}",e.toString());
+                }
+            }
         }
+        log.info("zipFiles success...");
     }
+//    /**
+//     * @param imgs        要压缩的文件的路径列表
+//     * @param destZipPath 临时保存压缩的文件的路径
+//     */
+//    public void zipFile(List<String> imgs, String destZipPath) {
+//        File zipFile = new File(destZipPath);
+//        try {
+//            ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
+//            byte[] tempBuff = null;
+//            FileInputStream fileInputStream = null;
+//            for (String img : imgs) {
+//                //获取要压缩的图片流:这里可以根据不同服务器的获取方式去获取图片，比如网络图片。可以使用URL.openConnection();我这里是直接读取本地的
+//                fileInputStream = new FileInputStream(img);
+//                int len = -1;
+//                tempBuff = new byte[2048];
+//                //分别设置压缩包中每一文件的文件名（必须含文件后缀）
+//                zipOutputStream.putNextEntry(new ZipEntry(img.substring(img.lastIndexOf("/") + 1)));
+//                //将图片添加到压缩包中
+//                while ((len = fileInputStream.read(tempBuff)) != -1) {
+//                    zipOutputStream.write(tempBuff);
+//                }
+//                zipOutputStream.closeEntry();
+//                fileInputStream.close();
+//            }
+//            zipOutputStream.close();
+//            //删除压缩包
+//            zipFile.delete();
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
