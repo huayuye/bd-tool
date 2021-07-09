@@ -40,7 +40,6 @@
         <scope>system</scope>
         <systemPath>${project.basedir}/libs/jai-codec-1.1.3.jar</systemPath>
       </dependency>
-      <!--easy poi-->
       <dependency>
         <groupId>com.bingdeng.tool</groupId>
         <artifactId>jai-core</artifactId>
@@ -48,20 +47,21 @@
         <scope>system</scope>
         <systemPath>${project.basedir}/libs/jai_core-1.1.3.jar</systemPath>
       </dependency>
+      <!--easy poi 4.2.0此版本支持图片导出-->
       <dependency>
         <groupId>cn.afterturn</groupId>
         <artifactId>easypoi-base</artifactId>
-        <version>3.2.0</version>
+        <version>4.2.0</version>
       </dependency>
       <dependency>
         <groupId>cn.afterturn</groupId>
         <artifactId>easypoi-web</artifactId>
-        <version>3.2.0</version>
+        <version>4.2.0</version>
       </dependency>
       <dependency>
         <groupId>cn.afterturn</groupId>
         <artifactId>easypoi-annotation</artifactId>
-        <version>3.2.0</version>
+        <version>4.2.0</version>
       </dependency>
 <!--阿里的excel,word等处理jar-->
       <dependency>
