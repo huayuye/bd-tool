@@ -28,11 +28,18 @@ public class Image2PdfUtil {
             for (int i = 0; i < imageUrllist.size(); i++) {  //循环图片List，将图片加入到pdf中
                 doc.newPage();  //在pdf创建一页
                 Image png1 = Image.getInstance(imageUrllist.get(i)); //通过文件路径获取image
-                float heigth = png1.getHeight();
-                float width = png1.getWidth();
-                int percent = getPercent(heigth, width);
-                png1.setAlignment(Image.MIDDLE);
-                png1.scalePercent(percent + 3);// 表示是原来图像的比例;
+                //图片原比例设置
+//                float heigth = png1.getHeight();
+//                float width = png1.getWidth();
+//                int percent = getPercent(heigth, width);
+//                png1.setAlignment(Image.MIDDLE);
+//                png1.scalePercent(percent + 3);// 表示是原来图像的比例;
+                //图片原比例设置----end
+                //根据文档配置----start
+                float with = doc.getPageSize().getWidth()-doc.leftMargin()-doc.rightMargin();
+                float height = with / 580 * 320;
+                png1.scaleAbsolute(with, height);
+                //根据文档配置----end
                 doc.add(png1);
             }
             doc.close();
@@ -74,10 +81,10 @@ public class Image2PdfUtil {
 
     public static void main(String[] args) {
         List<String> list = new ArrayList();
-        list.add("C:/htmlpdf/发票1.png");
-        list.add("C:/htmlpdf/发票2.png");
-        list.add("C:/htmlpdf/发票3.png");
-        Pdf(list, "C:/htmlpdf/发票.pdf");
+        list.add("C:\\Users\\yyx\\Desktop\\照片\\1547109181(1).jpg");
+        list.add("C:\\Users\\yyx\\Desktop\\照片\\1547109181(1).jpg");
+        list.add("C:\\Users\\yyx\\Desktop\\照片\\1547109181(1).jpg");
+        Pdf(list, "E:\\testJpg3.pdf");
     }
 
 
